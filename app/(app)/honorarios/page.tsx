@@ -1,25 +1,12 @@
-import { ModulePage } from "@/components/app/module-page"
+import { LegalFeeForm } from "@/components/app/legal-fee-form"
+import { LegalFeesView } from "@/components/app/legal-fees-view"
+import { getClients, legalCases, legalFees } from "@/lib/mock-data"
 
 export default function HonorariosPage() {
   return (
-    <ModulePage
-      title="Honorarios"
-      description="Contratos, parcelas, vencimentos, pagamentos e saldo restante."
-      filters={["Cliente", "Processo", "Status"]}
-      rows={[
-        {
-          title: "Contrato Marina Almeida",
-          subtitle: "Entrada + 6 parcelas | vencimento dia 10",
-          status: "Pendente",
-          amount: "R$ 8.400,00",
-        },
-        {
-          title: "Contrato LS Comercio Ltda.",
-          subtitle: "12 parcelas | 4 pagas",
-          status: "Ativo",
-          amount: "R$ 24.000,00",
-        },
-      ]}
-    />
+    <div className="grid gap-6">
+      <LegalFeesView legalFees={legalFees} />
+      <LegalFeeForm cases={legalCases} clients={getClients()} />
+    </div>
   )
 }

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ArrowUpDown, ChevronLeft, ChevronRight, Plus } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -53,11 +53,18 @@ export function ModulePage({
   title,
 }: ModulePageProps) {
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+            Modulo
+          </p>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground">
+            {title}
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            {description}
+          </p>
         </div>
         {primaryAction ? (
           <Button asChild>
@@ -73,7 +80,7 @@ export function ModulePage({
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
           <CardDescription>
-            Base visual para pesquisa, paginacao e filtros por modulo.
+            Pesquisa, paginacao e filtros com padrao unico para todo o sistema.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -90,23 +97,38 @@ export function ModulePage({
         <CardHeader>
           <CardTitle>Registros</CardTitle>
           <CardDescription>
-            Tabela responsiva preparada para TanStack Table.
+            Lista profissional com busca, ordenacao e paginacao previstas.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Detalhe</TableHead>
+                <TableHead>
+                  <span className="inline-flex items-center gap-2">
+                    Nome
+                    <ArrowUpDown className="size-3" />
+                  </span>
+                </TableHead>
+                <TableHead>
+                  <span className="inline-flex items-center gap-2">
+                    Detalhe
+                    <ArrowUpDown className="size-3" />
+                  </span>
+                </TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Valor</TableHead>
+                <TableHead className="text-right">
+                  <span className="inline-flex items-center justify-end gap-2">
+                    Valor
+                    <ArrowUpDown className="size-3" />
+                  </span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((row) => (
                 <TableRow key={`${row.title}-${row.subtitle}`}>
-                  <TableCell className="font-medium">{row.title}</TableCell>
+                  <TableCell className="font-medium text-foreground">{row.title}</TableCell>
                   <TableCell className="text-muted-foreground">
                     {row.subtitle}
                   </TableCell>
@@ -118,6 +140,19 @@ export function ModulePage({
               ))}
             </TableBody>
           </Table>
+          <div className="mt-4 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+            <span>Mostrando 1-{rows.length} de {rows.length} registros</span>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                <ChevronLeft className="size-4" />
+                Anterior
+              </Button>
+              <Button variant="outline" size="sm">
+                Proxima
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

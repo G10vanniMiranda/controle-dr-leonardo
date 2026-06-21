@@ -1,25 +1,12 @@
-import { ModulePage } from "@/components/app/module-page"
+import { MonthlyBillForm } from "@/components/app/monthly-bill-form"
+import { MonthlyBillsView } from "@/components/app/monthly-bills-view"
+import { getMonthlyBills } from "@/lib/mock-data"
 
 export default function ContasPage() {
   return (
-    <ModulePage
-      title="Contas mensais"
-      description="Despesas pessoais, escritorio, impostos, marketing e recorrencias."
-      filters={["Mes", "Categoria", "Status"]}
-      rows={[
-        {
-          title: "Aluguel do escritorio",
-          subtitle: "Categoria Escritorio | recorrente",
-          status: "Pendente",
-          amount: "R$ 3.200,00",
-        },
-        {
-          title: "Sistema juridico",
-          subtitle: "Categoria Sistema | mensal",
-          status: "Pago",
-          amount: "R$ 389,00",
-        },
-      ]}
-    />
+    <div className="grid gap-6">
+      <MonthlyBillsView bills={getMonthlyBills()} />
+      <MonthlyBillForm />
+    </div>
   )
 }

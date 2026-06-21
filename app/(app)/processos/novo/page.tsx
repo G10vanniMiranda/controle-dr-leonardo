@@ -1,11 +1,16 @@
-import { ModulePage } from "@/components/app/module-page"
+import { CaseForm } from "@/components/app/case-form"
+import { PageHeading } from "@/components/app/page-heading"
+import { getClients } from "@/lib/mock-data"
 
 export default function NovoProcessoPage() {
   return (
-    <ModulePage
-      title="Novo processo"
-      description="Formulario inicial para cliente, numero, vara, comarca, valor e fase."
-      filters={["Cliente", "Numero do processo", "Status"]}
-    />
+    <div className="grid gap-6">
+      <PageHeading
+        eyebrow="Processos"
+        title="Novo processo"
+        description="Crie um processo vinculado a um cliente ja cadastrado. A persistencia sera ligada ao banco ao final."
+      />
+      <CaseForm clients={getClients()} />
+    </div>
   )
 }

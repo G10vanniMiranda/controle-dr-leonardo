@@ -1,11 +1,15 @@
-import { ModulePage } from "@/components/app/module-page"
+import { ClientForm } from "@/components/app/client-form"
+import { PageHeading } from "@/components/app/page-heading"
 
 export default function NovoClientePage() {
   return (
-    <ModulePage
-      title="Novo cliente"
-      description="Formulario inicial para nome, CPF/CNPJ, contato, endereco e observacoes."
-      filters={["CPF/CNPJ", "Telefone", "E-mail"]}
-    />
+    <div className="grid gap-6">
+      <PageHeading
+        eyebrow="Clientes"
+        title="Novo cliente"
+        description="Cadastre os dados principais do cliente. Por enquanto, o salvamento e apenas simulado no frontend."
+      />
+      <ClientForm />
+    </div>
   )
 }

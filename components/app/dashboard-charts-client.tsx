@@ -27,7 +27,16 @@ import {
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
-const chartColors = ["#18181b", "#52525b", "#a1a1aa", "#d4d4d8"]
+const chartColors = ["#2563eb", "#6b7280", "#9ca3af", "#3a3a3a"]
+
+const tooltipStyle = {
+  backgroundColor: "#2f2f2f",
+  border: "1px solid #404040",
+  borderRadius: "12px",
+  color: "#ffffff",
+}
+
+const axisTick = { fill: "#9e9e9e", fontSize: 12 }
 
 function ChartFrame({
   children,
@@ -83,14 +92,17 @@ export function DashboardChartsClient() {
           <ChartFrame className="h-80 min-w-0">
             {({ height, width }) => (
             <BarChart data={monthlyFlow} width={width} height={height}>
-              <CartesianGrid vertical={false} strokeDasharray="3 3" />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} />
+              <CartesianGrid vertical={false} stroke="#404040" strokeDasharray="3 3" />
+              <XAxis dataKey="month" tick={axisTick} tickLine={false} axisLine={false} />
               <YAxis
+                tick={axisTick}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(value) => `R$ ${Number(value) / 1000}k`}
               />
               <Tooltip
+                contentStyle={tooltipStyle}
+                cursor={{ fill: "#3a3a3a", opacity: 0.35 }}
                 formatter={(value) =>
                   new Intl.NumberFormat("pt-BR", {
                     style: "currency",
@@ -98,8 +110,8 @@ export function DashboardChartsClient() {
                   }).format(Number(value))
                 }
               />
-              <Bar dataKey="entradas" fill="#18181b" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="saidas" fill="#a1a1aa" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="entradas" fill="#2563eb" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="saidas" fill="#6b7280" radius={[6, 6, 0, 0]} />
             </BarChart>
             )}
           </ChartFrame>
@@ -130,7 +142,7 @@ export function DashboardChartsClient() {
                     />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => `${value}%`} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(value) => `${value}%`} />
               </PieChart>
             )}
           </ChartFrame>
@@ -159,18 +171,19 @@ export function DashboardChartsClient() {
         <CardContent>
           <ChartFrame className="h-72 min-w-0">
             {({ height, width }) => (
-            <BarChart data={caseStatus} layout="vertical" width={width} height={height}>
-              <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-              <XAxis type="number" tickLine={false} axisLine={false} />
+              <BarChart data={caseStatus} layout="vertical" width={width} height={height}>
+              <CartesianGrid horizontal={false} stroke="#404040" strokeDasharray="3 3" />
+              <XAxis type="number" tick={axisTick} tickLine={false} axisLine={false} />
               <YAxis
                 dataKey="name"
                 type="category"
                 width={130}
+                tick={axisTick}
                 tickLine={false}
                 axisLine={false}
               />
-              <Tooltip />
-              <Bar dataKey="total" fill="#27272a" radius={[0, 6, 6, 0]} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "#3a3a3a", opacity: 0.35 }} />
+              <Bar dataKey="total" fill="#2563eb" radius={[0, 6, 6, 0]} />
             </BarChart>
             )}
           </ChartFrame>
