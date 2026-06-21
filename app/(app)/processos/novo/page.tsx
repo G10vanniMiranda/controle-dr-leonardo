@@ -1,6 +1,6 @@
 import { CaseForm } from "@/components/app/case-form"
 import { PageHeading } from "@/components/app/page-heading"
-import { getClients } from "@/lib/mock-data"
+import { getClients } from "@/lib/services/clients-service"
 
 export default function NovoProcessoPage() {
   return (

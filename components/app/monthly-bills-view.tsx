@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react"
 import {
-  ArrowUpDown,
   CalendarDays,
   CheckCircle2,
   Clock3,
@@ -16,7 +15,15 @@ import {
   type MonthlyBill,
   monthlyBillCategoryLabels,
   monthlyBillStatusLabels,
-} from "@/lib/mock-data"
+} from "@/lib/domain"
+import { EmptyState } from "@/components/app/empty-state"
+import { FormFeedback } from "@/components/app/form-feedback"
+import {
+  ListPagination,
+  SortHeader,
+  useListControls,
+} from "@/components/app/list-controls"
+import { markMonthlyBillAsPaid } from "@/lib/services/monthly-bills-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -36,12 +43,26 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+type MonthlyBillSortKey = "category" | "description" | "dueDate" | "status" | "value"
+
+const monthlyBillSortAccessors: Record<
+  MonthlyBillSortKey,
+  (bill: MonthlyBill) => number | string
+> = {
+  category: (bill) => monthlyBillCategoryLabels[bill.category],
+  description: (bill) => bill.description,
+  dueDate: (bill) => bill.dueDate,
+  status: (bill) => monthlyBillStatusLabels[bill.status],
+  value: (bill) => bill.valueCents,
+}
+
 export function MonthlyBillsView({ bills }: { bills: MonthlyBill[] }) {
   const [query, setQuery] = useState("")
   const [month, setMonth] = useState("2026-06")
   const [category, setCategory] = useState("todas")
   const [status, setStatus] = useState("todos")
   const [visibleBills, setVisibleBills] = useState(bills)
+  const [feedback, setFeedback] = useState("")
 
   const filteredBills = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -61,6 +82,25 @@ export function MonthlyBillsView({ bills }: { bills: MonthlyBill[] }) {
     })
   }, [category, month, query, status, visibleBills])
 
+  const {
+    canNextPage,
+    canPreviousPage,
+    endIndex,
+    page,
+    pageItems,
+    setNextPage,
+    setPreviousPage,
+    sort,
+    startIndex,
+    toggleSort,
+    totalPages,
+  } = useListControls<MonthlyBill, MonthlyBillSortKey>({
+    initialSort: { direction: "asc", field: "dueDate" },
+    items: filteredBills,
+    pageSize: 6,
+    sortAccessors: monthlyBillSortAccessors,
+  })
+
   const monthBills = visibleBills.filter((bill) => bill.dueDate.startsWith(month))
   const totalCents = monthBills.reduce((total, bill) => total + bill.valueCents, 0)
   const paidCents = monthBills
@@ -74,17 +114,16 @@ export function MonthlyBillsView({ bills }: { bills: MonthlyBill[] }) {
     .reduce((total, bill) => total + bill.valueCents, 0)
 
   function markAsPaid(id: string) {
+    const paidBill = markMonthlyBillAsPaid(id)
+
+    if (!paidBill) {
+      return
+    }
+
     setVisibleBills((currentBills) =>
-      currentBills.map((bill) =>
-        bill.id === id
-          ? {
-              ...bill,
-              paidAt: new Date().toISOString().slice(0, 10),
-              status: "paid",
-            }
-          : bill
-      )
+      currentBills.map((bill) => (bill.id === id ? paidBill : bill))
     )
+    setFeedback("Conta marcada como paga no mock da sessao.")
   }
 
   return (
@@ -191,24 +230,53 @@ export function MonthlyBillsView({ bills }: { bills: MonthlyBill[] }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {feedback ? (
+            <div className="mb-4">
+              <FormFeedback>{feedback}</FormFeedback>
+            </div>
+          ) : null}
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <span className="inline-flex items-center gap-2">
+                  <SortHeader
+                    field="description"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
                     Conta
-                    <ArrowUpDown className="size-3" />
-                  </span>
+                  </SortHeader>
                 </TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Vencimento</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Valor</TableHead>
+                <TableHead>
+                  <SortHeader field="category" sort={sort} onSort={toggleSort}>
+                    Categoria
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader field="dueDate" sort={sort} onSort={toggleSort}>
+                    Vencimento
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader field="status" sort={sort} onSort={toggleSort}>
+                    Status
+                  </SortHeader>
+                </TableHead>
+                <TableHead className="text-right">
+                  <SortHeader
+                    align="right"
+                    field="value"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
+                    Valor
+                  </SortHeader>
+                </TableHead>
                 <TableHead className="text-right">Acao</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredBills.map((bill) => (
+              {pageItems.map((bill) => (
                 <TableRow key={bill.id}>
                   <TableCell>
                     <div className="font-medium text-foreground">
@@ -250,6 +318,25 @@ export function MonthlyBillsView({ bills }: { bills: MonthlyBill[] }) {
               ))}
             </TableBody>
           </Table>
+          {filteredBills.length === 0 ? (
+            <EmptyState
+              className="mt-4"
+              title="Nenhuma conta encontrada"
+              description="Revise mes, categoria, status ou termo de busca para localizar despesas."
+            />
+          ) : (
+            <ListPagination
+              canNextPage={canNextPage}
+              canPreviousPage={canPreviousPage}
+              endIndex={endIndex}
+              onNextPage={setNextPage}
+              onPreviousPage={setPreviousPage}
+              page={page}
+              startIndex={startIndex}
+              totalCount={filteredBills.length}
+              totalPages={totalPages}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

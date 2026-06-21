@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { ArrowUpDown, CheckCircle2, Clock3, FileCheck2, ReceiptText, Search } from "lucide-react"
+import { CheckCircle2, Clock3, FileCheck2, ReceiptText, Search } from "lucide-react"
 
 import { brlFormatter, dateFormatter } from "@/lib/formatters"
 import {
@@ -9,9 +9,19 @@ import {
   type DebtInstallmentPlan,
   debtInstallmentPaymentStatusLabels,
   debtInstallmentStatusLabels,
-  getClientById,
+} from "@/lib/domain"
+import { EmptyState } from "@/components/app/empty-state"
+import { FormFeedback } from "@/components/app/form-feedback"
+import {
+  ListPagination,
+  SortHeader,
+  useListControls,
+} from "@/components/app/list-controls"
+import {
   getDebtInstallmentPayments,
-} from "@/lib/mock-data"
+  markDebtInstallmentPaymentAsPaid,
+} from "@/lib/services/debt-installments-service"
+import { getClientById } from "@/lib/services/clients-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -31,6 +41,13 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+type DebtInstallmentSortKey =
+  | "client"
+  | "description"
+  | "installments"
+  | "status"
+  | "total"
+
 export function DebtInstallmentsView({
   debtInstallments,
 }: {
@@ -40,6 +57,7 @@ export function DebtInstallmentsView({
   const [status, setStatus] = useState("todos")
   const [selectedId, setSelectedId] = useState(debtInstallments[0]?.id ?? "")
   const [plans, setPlans] = useState(debtInstallments)
+  const [feedback, setFeedback] = useState("")
   const [payments, setPayments] = useState<DebtInstallmentPayment[]>(() =>
     debtInstallments.flatMap((plan) => getDebtInstallmentPayments(plan.id))
   )
@@ -63,6 +81,34 @@ export function DebtInstallmentsView({
   const selectedPayments = payments.filter(
     (payment) => payment.debtInstallmentId === selectedPlan?.id
   )
+  const {
+    canNextPage,
+    canPreviousPage,
+    endIndex,
+    page,
+    pageItems,
+    setNextPage,
+    setPreviousPage,
+    sort,
+    startIndex,
+    toggleSort,
+    totalPages,
+  } = useListControls<DebtInstallmentPlan, DebtInstallmentSortKey>({
+    initialSort: { direction: "asc", field: "description" },
+    items: filteredPlans,
+    pageSize: 6,
+    sortAccessors: {
+      client: (plan) => getClientById(plan.clientId)?.fullName ?? "",
+      description: (plan) => plan.description,
+      installments: (plan) =>
+        payments.filter(
+          (payment) =>
+            payment.debtInstallmentId === plan.id && payment.status === "paid"
+        ).length,
+      status: (plan) => debtInstallmentStatusLabels[plan.status],
+      total: (plan) => plan.totalValueCents,
+    },
+  })
   const paidCents = payments
     .filter((payment) => payment.status === "paid")
     .reduce((total, payment) => total + payment.valueCents, 0)
@@ -83,12 +129,7 @@ export function DebtInstallmentsView({
 
       planToCheck = payment.debtInstallmentId
 
-      return {
-        ...payment,
-        paidAt: new Date().toISOString().slice(0, 10),
-        receiptName: `comprovante-${payment.id}.pdf`,
-        status: "paid" as const,
-      }
+      return markDebtInstallmentPaymentAsPaid(payment)
     })
 
     setPayments(nextPayments)
@@ -103,7 +144,11 @@ export function DebtInstallmentsView({
           plan.id === planToCheck ? { ...plan, status: "paid" } : plan
         )
       )
+      setFeedback("Parcela marcada como paga e plano quitado automaticamente.")
+      return
     }
+
+    setFeedback("Parcela marcada como paga no mock da sessao.")
   }
 
   return (
@@ -174,19 +219,47 @@ export function DebtInstallmentsView({
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <span className="inline-flex items-center gap-2">
+                  <SortHeader
+                    field="description"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
                     Divida
-                    <ArrowUpDown className="size-3" />
-                  </span>
+                  </SortHeader>
                 </TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Parcelas</TableHead>
-                <TableHead className="text-right">Total</TableHead>
+                <TableHead>
+                  <SortHeader field="client" sort={sort} onSort={toggleSort}>
+                    Cliente
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader field="status" sort={sort} onSort={toggleSort}>
+                    Status
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader
+                    field="installments"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
+                    Parcelas
+                  </SortHeader>
+                </TableHead>
+                <TableHead className="text-right">
+                  <SortHeader
+                    align="right"
+                    field="total"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
+                    Total
+                  </SortHeader>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPlans.map((plan) => {
+              {pageItems.map((plan) => {
                 const client = getClientById(plan.clientId)
                 const planPayments = payments.filter(
                   (payment) => payment.debtInstallmentId === plan.id
@@ -237,6 +310,25 @@ export function DebtInstallmentsView({
               })}
             </TableBody>
           </Table>
+          {filteredPlans.length === 0 ? (
+            <EmptyState
+              className="mt-4"
+              title="Nenhum parcelamento encontrado"
+              description="Ajuste a busca ou o status para localizar planos de quitacao cadastrados."
+            />
+          ) : (
+            <ListPagination
+              canNextPage={canNextPage}
+              canPreviousPage={canPreviousPage}
+              endIndex={endIndex}
+              onNextPage={setNextPage}
+              onPreviousPage={setPreviousPage}
+              page={page}
+              startIndex={startIndex}
+              totalCount={filteredPlans.length}
+              totalPages={totalPages}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -249,6 +341,11 @@ export function DebtInstallmentsView({
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {feedback ? (
+              <div className="mb-4">
+                <FormFeedback>{feedback}</FormFeedback>
+              </div>
+            ) : null}
             <Table>
               <TableHeader>
                 <TableRow>
@@ -311,6 +408,13 @@ export function DebtInstallmentsView({
                 ))}
               </TableBody>
             </Table>
+            {selectedPayments.length === 0 ? (
+              <EmptyState
+                className="mt-4"
+                title="Nenhuma parcela encontrada"
+                description="As parcelas do plano selecionado serao listadas aqui quando existirem."
+              />
+            ) : null}
           </CardContent>
         </Card>
       ) : null}

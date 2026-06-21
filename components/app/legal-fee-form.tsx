@@ -2,16 +2,17 @@
 
 import { useMemo, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { CheckCircle2 } from "lucide-react"
 import { useForm, useWatch } from "react-hook-form"
 import { z } from "zod"
 
 import { brlFormatter, dateFormatter } from "@/lib/formatters"
+import { formatMoneyInput, parseMoneyToNumber } from "@/lib/input-masks"
 import {
   type Client,
   type LegalCase,
-  generateInstallmentPreview,
-} from "@/lib/mock-data"
+} from "@/lib/domain"
+import { FormFeedback } from "@/components/app/form-feedback"
+import { generateInstallmentPreview } from "@/lib/services/legal-fees-service"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -35,10 +36,16 @@ const legalFeeSchema = z.object({
   clientId: z.string().min(1, "Selecione o cliente."),
   caseId: z.string().optional(),
   contractName: z.string().min(3, "Informe o nome do contrato."),
-  entryValue: z.coerce.number().min(0, "Informe a entrada."),
+  entryValue: z.string().transform(parseMoneyToNumber),
   firstDueDate: z.string().min(1, "Informe o primeiro vencimento."),
   installmentsCount: z.coerce.number().min(1).max(48),
-  installmentValue: z.coerce.number().min(1, "Informe o valor da parcela."),
+  installmentValue: z
+    .string()
+    .refine(
+      (value) => parseMoneyToNumber(value) > 0,
+      "Informe o valor da parcela."
+    )
+    .transform(parseMoneyToNumber),
   notes: z.string().optional(),
 })
 
@@ -53,16 +60,17 @@ export function LegalFeeForm({
   clients: Client[]
 }) {
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
   const form = useForm<LegalFeeFormInput, unknown, LegalFeeFormValues>({
     resolver: zodResolver(legalFeeSchema),
     defaultValues: {
       caseId: cases[0]?.id ?? "",
       clientId: clients[0]?.id ?? "",
       contractName: "",
-      entryValue: 0,
+      entryValue: "R$ 0,00",
       firstDueDate: new Date().toISOString().slice(0, 10),
       installmentsCount: 6,
-      installmentValue: 1000,
+      installmentValue: "R$ 1.000,00",
       notes: "",
     },
   })
@@ -70,10 +78,14 @@ export function LegalFeeForm({
   const preview = useMemo(
     () =>
       generateInstallmentPreview({
-        entryValueCents: Math.round(Number(watched.entryValue || 0) * 100),
+        entryValueCents: Math.round(
+          parseMoneyToNumber(watched.entryValue) * 100
+        ),
         firstDueDate: watched.firstDueDate || new Date().toISOString().slice(0, 10),
         installmentsCount: Number(watched.installmentsCount || 0),
-        installmentValueCents: Math.round(Number(watched.installmentValue || 0) * 100),
+        installmentValueCents: Math.round(
+          parseMoneyToNumber(watched.installmentValue) * 100
+        ),
       }),
     [
       watched.entryValue,
@@ -88,7 +100,9 @@ export function LegalFeeForm({
   )
 
   function onSubmit() {
+    setSaving(true)
     setSaved(true)
+    window.setTimeout(() => setSaving(false), 450)
   }
 
   return (
@@ -130,13 +144,34 @@ export function LegalFeeForm({
               <Input placeholder="Contrato de honorarios - cliente" {...form.register("contractName")} />
             </Field>
             <Field label="Entrada em reais" error={form.formState.errors.entryValue?.message}>
-              <Input type="number" min="0" step="0.01" {...form.register("entryValue")} />
+              <Input
+                inputMode="numeric"
+                placeholder="R$ 0,00"
+                {...form.register("entryValue")}
+                onChange={(event) => {
+                  form.setValue("entryValue", formatMoneyInput(event.target.value), {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }}
+              />
             </Field>
             <Field label="Quantidade de parcelas" error={form.formState.errors.installmentsCount?.message}>
               <Input type="number" min="1" max="48" {...form.register("installmentsCount")} />
             </Field>
             <Field label="Valor da parcela em reais" error={form.formState.errors.installmentValue?.message}>
-              <Input type="number" min="1" step="0.01" {...form.register("installmentValue")} />
+              <Input
+                inputMode="numeric"
+                placeholder="R$ 1.000,00"
+                {...form.register("installmentValue")}
+                onChange={(event) => {
+                  form.setValue(
+                    "installmentValue",
+                    formatMoneyInput(event.target.value),
+                    { shouldDirty: true, shouldValidate: true }
+                  )
+                }}
+              />
             </Field>
             <Field label="Primeiro vencimento" error={form.formState.errors.firstDueDate?.message}>
               <Input type="date" {...form.register("firstDueDate")} />
@@ -189,14 +224,15 @@ export function LegalFeeForm({
           </div>
 
           {saved ? (
-            <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-[#9db8ff]">
-              <CheckCircle2 className="size-4" />
+            <FormFeedback>
               Contrato simulado com parcelas geradas. Depois, isso gravara em legal_fees e fee_installments.
-            </div>
+            </FormFeedback>
           ) : null}
 
           <div className="flex justify-end">
-            <Button type="submit">Gerar contrato</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? "Gerando..." : "Gerar contrato"}
+            </Button>
           </div>
         </form>
       </CardContent>

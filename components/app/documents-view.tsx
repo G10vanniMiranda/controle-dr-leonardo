@@ -8,7 +8,14 @@ import {
   type DocumentRecord,
   documentModuleLabels,
   documentTypeLabels,
-} from "@/lib/mock-data"
+} from "@/lib/domain"
+import { EmptyState } from "@/components/app/empty-state"
+import { FormFeedback } from "@/components/app/form-feedback"
+import {
+  ListPagination,
+  SortHeader,
+  useListControls,
+} from "@/components/app/list-controls"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -26,6 +33,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+
+type DocumentSortKey = "createdAt" | "fileName" | "linkedEntity" | "module" | "type"
+
+const documentSortAccessors: Record<
+  DocumentSortKey,
+  (document: DocumentRecord) => number | string
+> = {
+  createdAt: (document) => document.createdAt,
+  fileName: (document) => document.fileName,
+  linkedEntity: (document) => document.linkedEntityLabel,
+  module: (document) => documentModuleLabels[document.module],
+  type: (document) => documentTypeLabels[document.type],
+}
 
 export function DocumentsView({ documents }: { documents: DocumentRecord[] }) {
   const [query, setQuery] = useState("")
@@ -47,6 +67,25 @@ export function DocumentsView({ documents }: { documents: DocumentRecord[] }) {
       return matchesModule && matchesType && matchesQuery
     })
   }, [documents, module, query, type])
+
+  const {
+    canNextPage,
+    canPreviousPage,
+    endIndex,
+    page,
+    pageItems,
+    setNextPage,
+    setPreviousPage,
+    sort,
+    startIndex,
+    toggleSort,
+    totalPages,
+  } = useListControls<DocumentRecord, DocumentSortKey>({
+    initialSort: { direction: "desc", field: "createdAt" },
+    items: filteredDocuments,
+    pageSize: 6,
+    sortAccessors: documentSortAccessors,
+  })
 
   return (
     <div className="grid gap-6">
@@ -123,11 +162,17 @@ export function DocumentsView({ documents }: { documents: DocumentRecord[] }) {
               <input
                 className="sr-only"
                 type="file"
-                onChange={(event) =>
+                onChange={(event) => {
                   setUploadedFile(event.target.files?.[0]?.name ?? null)
-                }
+                }}
               />
             </label>
+            {uploadedFile ? (
+              <FormFeedback>
+                Arquivo selecionado no mock. O envio real sera ligado ao Supabase
+                Storage.
+              </FormFeedback>
+            ) : null}
             <div className="flex items-center gap-2 rounded-xl border border-border bg-secondary p-3 text-sm text-muted-foreground">
               <ShieldCheck className="size-4 text-primary" />
               Documentos ficarao protegidos por usuario no Storage.
@@ -147,15 +192,44 @@ export function DocumentsView({ documents }: { documents: DocumentRecord[] }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Arquivo</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Modulo</TableHead>
-                <TableHead>Vinculo</TableHead>
-                <TableHead className="text-right">Data</TableHead>
+                <TableHead>
+                  <SortHeader field="fileName" sort={sort} onSort={toggleSort}>
+                    Arquivo
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader field="type" sort={sort} onSort={toggleSort}>
+                    Tipo
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader field="module" sort={sort} onSort={toggleSort}>
+                    Modulo
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader
+                    field="linkedEntity"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
+                    Vinculo
+                  </SortHeader>
+                </TableHead>
+                <TableHead className="text-right">
+                  <SortHeader
+                    align="right"
+                    field="createdAt"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
+                    Data
+                  </SortHeader>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredDocuments.map((document) => (
+              {pageItems.map((document) => (
                 <TableRow key={document.id}>
                   <TableCell>
                     <div className="flex items-center gap-2 font-medium text-foreground">
@@ -180,6 +254,25 @@ export function DocumentsView({ documents }: { documents: DocumentRecord[] }) {
               ))}
             </TableBody>
           </Table>
+          {filteredDocuments.length === 0 ? (
+            <EmptyState
+              className="mt-4"
+              title="Nenhum documento encontrado"
+              description="Revise modulo, tipo ou termo de busca para localizar arquivos vinculados."
+            />
+          ) : (
+            <ListPagination
+              canNextPage={canNextPage}
+              canPreviousPage={canPreviousPage}
+              endIndex={endIndex}
+              onNextPage={setNextPage}
+              onPreviousPage={setPreviousPage}
+              page={page}
+              startIndex={startIndex}
+              totalCount={filteredDocuments.length}
+              totalPages={totalPages}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

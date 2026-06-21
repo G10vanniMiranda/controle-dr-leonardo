@@ -31,6 +31,7 @@ function NavLink({
   return (
     <Link
       href={href}
+      aria-current={active ? "page" : undefined}
       className={cn(
         "group relative flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground",
         active &&
@@ -166,9 +167,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={active ? "page" : undefined}
               className={cn(
-                "flex flex-col items-center gap-1 rounded-xl px-2 py-2 text-[0.68rem] text-muted-foreground transition-colors",
-                active && "bg-hover text-foreground"
+                "relative flex flex-col items-center gap-1 rounded-xl px-2 py-2 text-[0.68rem] text-muted-foreground transition-colors hover:bg-hover hover:text-foreground",
+                active &&
+                  "bg-hover text-foreground before:absolute before:top-1 before:h-0.5 before:w-6 before:rounded-full before:bg-primary"
               )}
             >
               <item.icon className="size-4" />

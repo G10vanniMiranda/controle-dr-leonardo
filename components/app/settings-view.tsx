@@ -1,7 +1,7 @@
 import { CheckCircle2, LockKeyhole, ShieldCheck, UserCog } from "lucide-react"
 
 import { dateFormatter } from "@/lib/formatters"
-import { getActivityLogs } from "@/lib/mock-data"
+import { getActivityLogs } from "@/lib/services/activity-logs-service"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,

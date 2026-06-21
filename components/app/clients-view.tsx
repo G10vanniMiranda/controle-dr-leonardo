@@ -3,9 +3,6 @@
 import { useMemo, useState } from "react"
 import Link from "next/link"
 import {
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
   Eye,
   Pencil,
   Plus,
@@ -16,8 +13,15 @@ import {
 import {
   type Client,
   clientStatusLabels,
-  getCasesByClientId,
-} from "@/lib/mock-data"
+} from "@/lib/domain"
+import { EmptyState } from "@/components/app/empty-state"
+import { FormFeedback } from "@/components/app/form-feedback"
+import {
+  ListPagination,
+  SortHeader,
+  useListControls,
+} from "@/components/app/list-controls"
+import { getCasesByClientId } from "@/lib/services/clients-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -46,10 +50,20 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+type ClientSortKey = "cases" | "client" | "contact" | "status"
+
+const clientSortAccessors: Record<ClientSortKey, (client: Client) => string | number> = {
+  cases: (client) => getCasesByClientId(client.id).length,
+  client: (client) => client.fullName,
+  contact: (client) => client.email,
+  status: (client) => clientStatusLabels[client.status],
+}
+
 export function ClientsView({ clients }: { clients: Client[] }) {
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [visibleClients, setVisibleClients] = useState(clients)
+  const [feedback, setFeedback] = useState("")
 
   const filteredClients = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -66,10 +80,30 @@ export function ClientsView({ clients }: { clients: Client[] }) {
     })
   }, [query, status, visibleClients])
 
+  const {
+    canNextPage,
+    canPreviousPage,
+    endIndex,
+    page,
+    pageItems,
+    setNextPage,
+    setPreviousPage,
+    sort,
+    startIndex,
+    toggleSort,
+    totalPages,
+  } = useListControls<Client, ClientSortKey>({
+    initialSort: { direction: "asc", field: "client" },
+    items: filteredClients,
+    pageSize: 6,
+    sortAccessors: clientSortAccessors,
+  })
+
   function removeClient(id: string) {
     setVisibleClients((currentClients) =>
       currentClients.filter((client) => client.id !== id)
     )
+    setFeedback("Cliente removido do mock da sessao.")
   }
 
   return (
@@ -133,23 +167,47 @@ export function ClientsView({ clients }: { clients: Client[] }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {feedback ? (
+            <div className="mb-4">
+              <FormFeedback>{feedback}</FormFeedback>
+            </div>
+          ) : null}
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <span className="inline-flex items-center gap-2">
+                  <SortHeader
+                    field="client"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
                     Cliente
-                    <ArrowUpDown className="size-3" />
-                  </span>
+                  </SortHeader>
                 </TableHead>
-                <TableHead>Contato</TableHead>
-                <TableHead>Processos</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>
+                  <SortHeader
+                    field="contact"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
+                    Contato
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader field="cases" sort={sort} onSort={toggleSort}>
+                    Processos
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader field="status" sort={sort} onSort={toggleSort}>
+                    Status
+                  </SortHeader>
+                </TableHead>
                 <TableHead className="text-right">Acoes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredClients.map((client) => {
+              {pageItems.map((client) => {
                 const casesCount = getCasesByClientId(client.id).length
 
                 return (
@@ -226,21 +284,25 @@ export function ClientsView({ clients }: { clients: Client[] }) {
               })}
             </TableBody>
           </Table>
-          <div className="mt-4 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <span>
-              Mostrando 1-{filteredClients.length} de {filteredClients.length} registros
-            </span>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <ChevronLeft className="size-4" />
-                Anterior
-              </Button>
-              <Button variant="outline" size="sm">
-                Proxima
-                <ChevronRight className="size-4" />
-              </Button>
-            </div>
-          </div>
+          {filteredClients.length === 0 ? (
+            <EmptyState
+              className="mt-4"
+              title="Nenhum cliente encontrado"
+              description="Ajuste a busca ou o filtro de status para localizar um cliente cadastrado."
+            />
+          ) : (
+            <ListPagination
+              canNextPage={canNextPage}
+              canPreviousPage={canPreviousPage}
+              endIndex={endIndex}
+              onNextPage={setNextPage}
+              onPreviousPage={setPreviousPage}
+              page={page}
+              startIndex={startIndex}
+              totalCount={filteredClients.length}
+              totalPages={totalPages}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

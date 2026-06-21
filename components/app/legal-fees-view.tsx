@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react"
 import {
-  ArrowUpDown,
   Banknote,
   CheckCircle2,
   Clock3,
@@ -15,11 +14,21 @@ import {
   type FeeInstallment,
   type LegalFee,
   feeInstallmentStatusLabels,
-  getClientById,
-  getFeeInstallmentsByLegalFeeId,
-  getLegalFeeSummary,
   legalFeeStatusLabels,
-} from "@/lib/mock-data"
+} from "@/lib/domain"
+import { EmptyState } from "@/components/app/empty-state"
+import { FormFeedback } from "@/components/app/form-feedback"
+import {
+  ListPagination,
+  SortHeader,
+  useListControls,
+} from "@/components/app/list-controls"
+import {
+  getLegalFeeInstallments,
+  getLegalFeeSummary,
+  markFeeInstallmentAsPaid,
+} from "@/lib/services/legal-fees-service"
+import { getClientById } from "@/lib/services/clients-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -39,12 +48,26 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+type LegalFeeSortKey = "client" | "contract" | "installments" | "status" | "total"
+
+const legalFeeSortAccessors: Record<
+  LegalFeeSortKey,
+  (legalFee: LegalFee) => number | string
+> = {
+  client: (legalFee) => getClientById(legalFee.clientId)?.fullName ?? "",
+  contract: (legalFee) => legalFee.contractName,
+  installments: (legalFee) => getLegalFeeSummary(legalFee.id).paidCount,
+  status: (legalFee) => legalFeeStatusLabels[legalFee.status],
+  total: (legalFee) => legalFee.totalValueCents,
+}
+
 export function LegalFeesView({ legalFees }: { legalFees: LegalFee[] }) {
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [selectedFeeId, setSelectedFeeId] = useState(legalFees[0]?.id ?? "")
+  const [feedback, setFeedback] = useState("")
   const [installments, setInstallments] = useState(() =>
-    legalFees.flatMap((legalFee) => getFeeInstallmentsByLegalFeeId(legalFee.id))
+    legalFees.flatMap((legalFee) => getLegalFeeInstallments(legalFee.id))
   )
 
   const filteredFees = useMemo(() => {
@@ -62,6 +85,25 @@ export function LegalFeesView({ legalFees }: { legalFees: LegalFee[] }) {
     })
   }, [legalFees, query, status])
 
+  const {
+    canNextPage,
+    canPreviousPage,
+    endIndex,
+    page,
+    pageItems,
+    setNextPage,
+    setPreviousPage,
+    sort,
+    startIndex,
+    toggleSort,
+    totalPages,
+  } = useListControls<LegalFee, LegalFeeSortKey>({
+    initialSort: { direction: "asc", field: "contract" },
+    items: filteredFees,
+    pageSize: 6,
+    sortAccessors: legalFeeSortAccessors,
+  })
+
   const selectedFee =
     legalFees.find((legalFee) => legalFee.id === selectedFeeId) ?? legalFees[0]
   const selectedInstallments = installments.filter(
@@ -78,18 +120,18 @@ export function LegalFeesView({ legalFees }: { legalFees: LegalFee[] }) {
     .reduce((total, installment) => total + installment.valueCents, 0)
 
   function markAsPaid(id: string) {
+    const paidInstallment = markFeeInstallmentAsPaid(id)
+
+    if (!paidInstallment) {
+      return
+    }
+
     setInstallments((currentInstallments) =>
       currentInstallments.map((installment) =>
-        installment.id === id
-          ? {
-              ...installment,
-              paidAt: new Date().toISOString().slice(0, 10),
-              paymentMethod: "PIX",
-              status: "paid",
-            }
-          : installment
+        installment.id === id ? paidInstallment : installment
       )
     )
+    setFeedback("Parcela marcada como paga no mock da sessao.")
   }
 
   return (
@@ -178,19 +220,39 @@ export function LegalFeesView({ legalFees }: { legalFees: LegalFee[] }) {
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <span className="inline-flex items-center gap-2">
+                  <SortHeader field="contract" sort={sort} onSort={toggleSort}>
                     Contrato
-                    <ArrowUpDown className="size-3" />
-                  </span>
+                  </SortHeader>
                 </TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Parcelas</TableHead>
-                <TableHead className="text-right">Total</TableHead>
+                <TableHead>
+                  <SortHeader field="client" sort={sort} onSort={toggleSort}>
+                    Cliente
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader field="status" sort={sort} onSort={toggleSort}>
+                    Status
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader field="installments" sort={sort} onSort={toggleSort}>
+                    Parcelas
+                  </SortHeader>
+                </TableHead>
+                <TableHead className="text-right">
+                  <SortHeader
+                    align="right"
+                    field="total"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
+                    Total
+                  </SortHeader>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredFees.map((legalFee) => {
+              {pageItems.map((legalFee) => {
                 const client = getClientById(legalFee.clientId)
                 const summary = getLegalFeeSummary(legalFee.id)
 
@@ -232,6 +294,25 @@ export function LegalFeesView({ legalFees }: { legalFees: LegalFee[] }) {
               })}
             </TableBody>
           </Table>
+          {filteredFees.length === 0 ? (
+            <EmptyState
+              className="mt-4"
+              title="Nenhum contrato encontrado"
+              description="Ajuste os filtros para localizar contratos de honorarios cadastrados."
+            />
+          ) : (
+            <ListPagination
+              canNextPage={canNextPage}
+              canPreviousPage={canPreviousPage}
+              endIndex={endIndex}
+              onNextPage={setNextPage}
+              onPreviousPage={setPreviousPage}
+              page={page}
+              startIndex={startIndex}
+              totalCount={filteredFees.length}
+              totalPages={totalPages}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -244,10 +325,22 @@ export function LegalFeesView({ legalFees }: { legalFees: LegalFee[] }) {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {feedback ? (
+              <div className="mb-4">
+                <FormFeedback>{feedback}</FormFeedback>
+              </div>
+            ) : null}
             <InstallmentsTable
               installments={selectedInstallments}
               onMarkAsPaid={markAsPaid}
             />
+            {selectedInstallments.length === 0 ? (
+              <EmptyState
+                className="mt-4"
+                title="Nenhuma parcela encontrada"
+                description="As parcelas deste contrato serao exibidas aqui quando forem geradas."
+              />
+            ) : null}
           </CardContent>
         </Card>
       ) : null}

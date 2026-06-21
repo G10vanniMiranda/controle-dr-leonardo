@@ -13,7 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { brlFormatter, dateFormatter } from "@/lib/formatters"
-import { caseStatusLabels, getCaseById } from "@/lib/mock-data"
+import { caseStatusLabels } from "@/lib/domain"
+import { getCaseById } from "@/lib/services/cases-service"
 
 export default async function ProcessoDetalhePage({
   params,

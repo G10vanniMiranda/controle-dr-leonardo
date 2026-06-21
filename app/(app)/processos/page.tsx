@@ -1,6 +1,6 @@
 import { CasesView } from "@/components/app/cases-view"
-import { legalCases } from "@/lib/mock-data"
+import { getCases } from "@/lib/services/cases-service"
 
 export default function ProcessosPage() {
-  return <CasesView cases={legalCases} />
+  return <CasesView cases={getCases()} />
 }

@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowUpDown, Mail, Phone, Plus } from "lucide-react"
 
+import { EmptyState } from "@/components/app/empty-state"
 import { PageHeading } from "@/components/app/page-heading"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -21,12 +22,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { brlFormatter, dateFormatter } from "@/lib/formatters"
+import { caseStatusLabels, clientStatusLabels } from "@/lib/domain"
 import {
-  caseStatusLabels,
-  clientStatusLabels,
   getCasesByClientId,
   getClientById,
-} from "@/lib/mock-data"
+} from "@/lib/services/clients-service"
 
 export default async function ClienteDetalhePage({
   params,
@@ -157,6 +157,13 @@ export default async function ClienteDetalhePage({
               ))}
             </TableBody>
           </Table>
+          {linkedCases.length === 0 ? (
+            <EmptyState
+              className="mt-4"
+              title="Nenhum processo vinculado"
+              description="Use a acao de vincular processo para associar demandas juridicas a este cliente."
+            />
+          ) : null}
         </CardContent>
       </Card>
     </div>

@@ -1,7 +1,7 @@
 import { ReceiptText, TrendingDown, TrendingUp, WalletCards } from "lucide-react"
 
 import { brlFormatter } from "@/lib/formatters"
-import { getMonthlyBillsSummary } from "@/lib/mock-data"
+import { getMonthlyBillsSummary } from "@/lib/services/monthly-bills-service"
 import {
   Card,
   CardContent,

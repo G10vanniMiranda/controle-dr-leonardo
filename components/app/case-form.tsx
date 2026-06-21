@@ -3,11 +3,16 @@
 import { useState } from "react"
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { CheckCircle2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { type Client, caseStatusLabels } from "@/lib/mock-data"
+import {
+  formatCaseNumber,
+  formatMoneyInput,
+  parseMoneyToNumber,
+} from "@/lib/input-masks"
+import { type Client, caseStatusLabels } from "@/lib/domain"
+import { FormFeedback } from "@/components/app/form-feedback"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -21,7 +26,7 @@ import { Label } from "@/components/ui/label"
 
 const caseSchema = z.object({
   actionType: z.string().min(3, "Informe o tipo da acao."),
-  caseNumber: z.string().min(10, "Informe o numero do processo."),
+  caseNumber: z.string().min(25, "Informe o numero do processo completo."),
   clientId: z.string().min(1, "Selecione um cliente."),
   court: z.string().min(2, "Informe a vara."),
   district: z.string().min(2, "Informe a comarca."),
@@ -29,7 +34,9 @@ const caseSchema = z.object({
   proceduralPhase: z.string().min(3, "Informe a fase processual."),
   state: z.string().min(2, "Informe o estado."),
   status: z.string().min(1),
-  claimValue: z.string().min(1, "Informe o valor da causa."),
+  claimValue: z
+    .string()
+    .refine((value) => parseMoneyToNumber(value) > 0, "Informe o valor da causa."),
   startDate: z.string().min(1, "Informe a data de inicio."),
   notes: z.string().optional(),
 })
@@ -38,6 +45,7 @@ type CaseFormValues = z.infer<typeof caseSchema>
 
 export function CaseForm({ clients }: { clients: Client[] }) {
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
   const form = useForm<CaseFormValues>({
     resolver: zodResolver(caseSchema),
     defaultValues: {
@@ -57,7 +65,9 @@ export function CaseForm({ clients }: { clients: Client[] }) {
   })
 
   function onSubmit() {
+    setSaving(true)
     setSaved(true)
+    window.setTimeout(() => setSaving(false), 450)
   }
 
   return (
@@ -84,7 +94,16 @@ export function CaseForm({ clients }: { clients: Client[] }) {
               </select>
             </Field>
             <Field label="Numero do processo" error={form.formState.errors.caseNumber?.message}>
-              <Input placeholder="0000000-00.2026.8.04.0001" {...form.register("caseNumber")} />
+              <Input
+                placeholder="0000000-00.2026.8.04.0001"
+                {...form.register("caseNumber")}
+                onChange={(event) => {
+                  form.setValue("caseNumber", formatCaseNumber(event.target.value), {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }}
+              />
             </Field>
             <Field label="Tipo da acao" error={form.formState.errors.actionType?.message}>
               <Input placeholder="Ex.: Revisional contratual" {...form.register("actionType")} />
@@ -102,7 +121,17 @@ export function CaseForm({ clients }: { clients: Client[] }) {
               <Input placeholder="AM" {...form.register("state")} />
             </Field>
             <Field label="Valor da causa" error={form.formState.errors.claimValue?.message}>
-              <Input placeholder="R$ 45.000,00" {...form.register("claimValue")} />
+              <Input
+                inputMode="numeric"
+                placeholder="R$ 45.000,00"
+                {...form.register("claimValue")}
+                onChange={(event) => {
+                  form.setValue("claimValue", formatMoneyInput(event.target.value), {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }}
+              />
             </Field>
             <Field label="Status">
               <select
@@ -133,17 +162,18 @@ export function CaseForm({ clients }: { clients: Client[] }) {
           </Field>
 
           {saved ? (
-            <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-[#9db8ff]">
-              <CheckCircle2 className="size-4" />
+            <FormFeedback>
               Processo salvo no mock. Depois, este fluxo gravara em Supabase.
-            </div>
+            </FormFeedback>
           ) : null}
 
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <Button asChild variant="outline">
               <Link href="/processos">Cancelar</Link>
             </Button>
-            <Button type="submit">Salvar processo</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? "Salvando..." : "Salvar processo"}
+            </Button>
           </div>
         </form>
       </CardContent>

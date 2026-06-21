@@ -1,7 +1,8 @@
 import { Download, FileSpreadsheet, FileText } from "lucide-react"
 
 import { brlFormatter } from "@/lib/formatters"
-import { getClients, getReports } from "@/lib/mock-data"
+import { getClients } from "@/lib/services/clients-service"
+import { getReports } from "@/lib/services/reports-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {

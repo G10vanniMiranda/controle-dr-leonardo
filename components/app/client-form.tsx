@@ -3,10 +3,11 @@
 import { useState } from "react"
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { CheckCircle2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
+import { formatCpfCnpj, formatPhone, onlyDigits } from "@/lib/input-masks"
+import { FormFeedback } from "@/components/app/form-feedback"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -20,8 +21,14 @@ import { Label } from "@/components/ui/label"
 
 const clientSchema = z.object({
   fullName: z.string().min(3, "Informe o nome completo."),
-  documentNumber: z.string().min(11, "Informe CPF ou CNPJ."),
-  phone: z.string().min(10, "Informe um telefone."),
+  documentNumber: z
+    .string()
+    .refine((value) => [11, 14].includes(onlyDigits(value).length), {
+      message: "Informe CPF ou CNPJ completo.",
+    }),
+  phone: z.string().refine((value) => onlyDigits(value).length >= 10, {
+    message: "Informe um telefone completo.",
+  }),
   email: z.string().email("Informe um e-mail valido."),
   address: z.string().min(5, "Informe o endereco."),
   status: z.enum(["active", "inactive"]),
@@ -32,6 +39,7 @@ type ClientFormValues = z.infer<typeof clientSchema>
 
 export function ClientForm() {
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
@@ -46,7 +54,9 @@ export function ClientForm() {
   })
 
   function onSubmit() {
+    setSaving(true)
     setSaved(true)
+    window.setTimeout(() => setSaving(false), 450)
   }
 
   return (
@@ -64,10 +74,29 @@ export function ClientForm() {
               <Input placeholder="Ex.: Marina Almeida" {...form.register("fullName")} />
             </Field>
             <Field label="CPF/CNPJ" error={form.formState.errors.documentNumber?.message}>
-              <Input placeholder="000.000.000-00" {...form.register("documentNumber")} />
+              <Input
+                placeholder="000.000.000-00"
+                {...form.register("documentNumber")}
+                onChange={(event) => {
+                  form.setValue(
+                    "documentNumber",
+                    formatCpfCnpj(event.target.value),
+                    { shouldDirty: true, shouldValidate: true }
+                  )
+                }}
+              />
             </Field>
             <Field label="Telefone" error={form.formState.errors.phone?.message}>
-              <Input placeholder="(92) 99999-9999" {...form.register("phone")} />
+              <Input
+                placeholder="(92) 99999-9999"
+                {...form.register("phone")}
+                onChange={(event) => {
+                  form.setValue("phone", formatPhone(event.target.value), {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }}
+              />
             </Field>
             <Field label="E-mail" error={form.formState.errors.email?.message}>
               <Input placeholder="cliente@email.com" {...form.register("email")} />
@@ -95,17 +124,18 @@ export function ClientForm() {
           </Field>
 
           {saved ? (
-            <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-[#9db8ff]">
-              <CheckCircle2 className="size-4" />
+            <FormFeedback>
               Cliente salvo no mock. A persistencia real sera ligada ao banco no final.
-            </div>
+            </FormFeedback>
           ) : null}
 
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <Button asChild variant="outline">
               <Link href="/clientes">Cancelar</Link>
             </Button>
-            <Button type="submit">Salvar cliente</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? "Salvando..." : "Salvar cliente"}
+            </Button>
           </div>
         </form>
       </CardContent>

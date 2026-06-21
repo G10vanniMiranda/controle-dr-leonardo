@@ -3,9 +3,6 @@
 import { useMemo, useState } from "react"
 import Link from "next/link"
 import {
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
   Eye,
   Pencil,
   Plus,
@@ -17,8 +14,15 @@ import { brlFormatter } from "@/lib/formatters"
 import {
   type LegalCase,
   caseStatusLabels,
-  getClientById,
-} from "@/lib/mock-data"
+} from "@/lib/domain"
+import { EmptyState } from "@/components/app/empty-state"
+import { FormFeedback } from "@/components/app/form-feedback"
+import {
+  ListPagination,
+  SortHeader,
+  useListControls,
+} from "@/components/app/list-controls"
+import { getClientById } from "@/lib/services/clients-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -47,10 +51,23 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+type CaseSortKey = "caseNumber" | "claimValue" | "client" | "status"
+
+const caseSortAccessors: Record<
+  CaseSortKey,
+  (legalCase: LegalCase) => string | number
+> = {
+  caseNumber: (legalCase) => legalCase.caseNumber,
+  claimValue: (legalCase) => legalCase.claimValueCents,
+  client: (legalCase) => getClientById(legalCase.clientId)?.fullName ?? "",
+  status: (legalCase) => caseStatusLabels[legalCase.status],
+}
+
 export function CasesView({ cases }: { cases: LegalCase[] }) {
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [visibleCases, setVisibleCases] = useState(cases)
+  const [feedback, setFeedback] = useState("")
 
   const filteredCases = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -69,10 +86,30 @@ export function CasesView({ cases }: { cases: LegalCase[] }) {
     })
   }, [query, status, visibleCases])
 
+  const {
+    canNextPage,
+    canPreviousPage,
+    endIndex,
+    page,
+    pageItems,
+    setNextPage,
+    setPreviousPage,
+    sort,
+    startIndex,
+    toggleSort,
+    totalPages,
+  } = useListControls<LegalCase, CaseSortKey>({
+    initialSort: { direction: "asc", field: "caseNumber" },
+    items: filteredCases,
+    pageSize: 6,
+    sortAccessors: caseSortAccessors,
+  })
+
   function removeCase(id: string) {
     setVisibleCases((currentCases) =>
       currentCases.filter((legalCase) => legalCase.id !== id)
     )
+    setFeedback("Processo removido do mock da sessao.")
   }
 
   return (
@@ -139,23 +176,48 @@ export function CasesView({ cases }: { cases: LegalCase[] }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {feedback ? (
+            <div className="mb-4">
+              <FormFeedback>{feedback}</FormFeedback>
+            </div>
+          ) : null}
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <span className="inline-flex items-center gap-2">
+                  <SortHeader
+                    field="caseNumber"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
                     Processo
-                    <ArrowUpDown className="size-3" />
-                  </span>
+                  </SortHeader>
                 </TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Valor da causa</TableHead>
+                <TableHead>
+                  <SortHeader field="client" sort={sort} onSort={toggleSort}>
+                    Cliente
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader field="status" sort={sort} onSort={toggleSort}>
+                    Status
+                  </SortHeader>
+                </TableHead>
+                <TableHead className="text-right">
+                  <SortHeader
+                    align="right"
+                    field="claimValue"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
+                    Valor da causa
+                  </SortHeader>
+                </TableHead>
                 <TableHead className="text-right">Acoes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCases.map((legalCase) => {
+              {pageItems.map((legalCase) => {
                 const client = getClientById(legalCase.clientId)
 
                 return (
@@ -239,21 +301,25 @@ export function CasesView({ cases }: { cases: LegalCase[] }) {
               })}
             </TableBody>
           </Table>
-          <div className="mt-4 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <span>
-              Mostrando 1-{filteredCases.length} de {filteredCases.length} registros
-            </span>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <ChevronLeft className="size-4" />
-                Anterior
-              </Button>
-              <Button variant="outline" size="sm">
-                Proxima
-                <ChevronRight className="size-4" />
-              </Button>
-            </div>
-          </div>
+          {filteredCases.length === 0 ? (
+            <EmptyState
+              className="mt-4"
+              title="Nenhum processo encontrado"
+              description="Revise os filtros ou cadastre um novo processo vinculado a um cliente."
+            />
+          ) : (
+            <ListPagination
+              canNextPage={canNextPage}
+              canPreviousPage={canPreviousPage}
+              endIndex={endIndex}
+              onNextPage={setNextPage}
+              onPreviousPage={setPreviousPage}
+              page={page}
+              startIndex={startIndex}
+              totalCount={filteredCases.length}
+              totalPages={totalPages}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

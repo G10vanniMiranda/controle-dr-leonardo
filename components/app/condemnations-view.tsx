@@ -1,16 +1,26 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { ArrowUpDown, Banknote, CheckCircle2, Gavel, Plus, Search } from "lucide-react"
+import { Banknote, CheckCircle2, Gavel, Plus, Search } from "lucide-react"
 
 import { brlFormatter, dateFormatter } from "@/lib/formatters"
 import {
   type Condemnation,
   type CondemnationPayment,
   condemnationStatusLabels,
-  getCaseById,
+} from "@/lib/domain"
+import { EmptyState } from "@/components/app/empty-state"
+import { FormFeedback } from "@/components/app/form-feedback"
+import {
+  ListPagination,
+  SortHeader,
+  useListControls,
+} from "@/components/app/list-controls"
+import {
   getCondemnationPayments,
-} from "@/lib/mock-data"
+  registerCondemnationPayment,
+} from "@/lib/services/condemnations-service"
+import { getCaseById } from "@/lib/services/cases-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -38,6 +48,10 @@ export function CondemnationsView({
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [items, setItems] = useState(condemnations)
+  const [feedback, setFeedback] = useState<{
+    message: string
+    tone?: "success" | "error"
+  } | null>(null)
   const [payments, setPayments] = useState<CondemnationPayment[]>(() =>
     condemnations.flatMap((condemnation) =>
       getCondemnationPayments(condemnation.id)
@@ -59,6 +73,45 @@ export function CondemnationsView({
       return matchesStatus && matchesQuery
     })
   }, [items, query, status])
+
+  const balanceByCondemnationId = useMemo(
+    () =>
+      Object.fromEntries(
+        items.map((item) => {
+          const paidCents = payments
+            .filter((payment) => payment.condemnationId === item.id)
+            .reduce((sum, payment) => sum + payment.valueCents, 0)
+
+          return [item.id, Math.max(item.updatedValueCents - paidCents, 0)]
+        })
+      ),
+    [items, payments]
+  )
+
+  const {
+    canNextPage,
+    canPreviousPage,
+    endIndex,
+    page,
+    pageItems,
+    setNextPage,
+    setPreviousPage,
+    sort,
+    startIndex,
+    toggleSort,
+    totalPages,
+  } = useListControls<Condemnation, "balance" | "parties" | "process" | "status">({
+    initialSort: { direction: "asc", field: "process" },
+    items: filtered,
+    pageSize: 6,
+    sortAccessors: {
+      balance: (condemnation) => balanceByCondemnationId[condemnation.id] ?? 0,
+      parties: (condemnation) => condemnation.debtorParty,
+      process: (condemnation) =>
+        getCaseById(condemnation.caseId)?.caseNumber ?? "",
+      status: (condemnation) => condemnationStatusLabels[condemnation.status],
+    },
+  })
 
   const totalOpenCents = items
     .filter((item) => item.status !== "paid")
@@ -87,20 +140,21 @@ export function CondemnationsView({
     const valueCents = Math.min(remainingCents, 500000)
 
     if (valueCents <= 0) {
+      setFeedback({
+        message: "Esta condenacao nao possui saldo pendente para pagamento.",
+        tone: "error",
+      })
       return
     }
 
     setPayments((currentPayments) => [
       ...currentPayments,
       {
+        ...registerCondemnationPayment(condemnation, valueCents),
         id: `${condemnation.id}-pagamento-${currentPayments.length + 1}`,
-        condemnationId: condemnation.id,
-        notes: "Pagamento simulado registrado na sessao.",
-        paidAt: new Date().toISOString().slice(0, 10),
-        paymentMethod: "PIX",
-        valueCents,
       },
     ])
+    setFeedback({ message: "Pagamento registrado no mock da sessao." })
   }
 
   function transformToInstallment(id: string) {
@@ -109,6 +163,7 @@ export function CondemnationsView({
         item.id === id ? { ...item, status: "installment" } : item
       )
     )
+    setFeedback({ message: "Condenacao transformada em parcelamento no mock." })
   }
 
   function markAsPaid(id: string) {
@@ -117,6 +172,7 @@ export function CondemnationsView({
         item.id === id ? { ...item, status: "paid" } : item
       )
     )
+    setFeedback({ message: "Condenacao marcada como quitada no mock." })
   }
 
   return (
@@ -183,31 +239,46 @@ export function CondemnationsView({
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {feedback ? (
+            <div className="mb-4">
+              <FormFeedback tone={feedback.tone}>{feedback.message}</FormFeedback>
+            </div>
+          ) : null}
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <span className="inline-flex items-center gap-2">
+                  <SortHeader field="process" sort={sort} onSort={toggleSort}>
                     Processo
-                    <ArrowUpDown className="size-3" />
-                  </span>
+                  </SortHeader>
                 </TableHead>
-                <TableHead>Partes</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Saldo</TableHead>
+                <TableHead>
+                  <SortHeader field="parties" sort={sort} onSort={toggleSort}>
+                    Partes
+                  </SortHeader>
+                </TableHead>
+                <TableHead>
+                  <SortHeader field="status" sort={sort} onSort={toggleSort}>
+                    Status
+                  </SortHeader>
+                </TableHead>
+                <TableHead className="text-right">
+                  <SortHeader
+                    align="right"
+                    field="balance"
+                    sort={sort}
+                    onSort={toggleSort}
+                  >
+                    Saldo
+                  </SortHeader>
+                </TableHead>
                 <TableHead className="text-right">Acoes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((condemnation) => {
+              {pageItems.map((condemnation) => {
                 const legalCase = getCaseById(condemnation.caseId)
-                const paidCentsForItem = payments
-                  .filter((payment) => payment.condemnationId === condemnation.id)
-                  .reduce((total, payment) => total + payment.valueCents, 0)
-                const remainingCents = Math.max(
-                  condemnation.updatedValueCents - paidCentsForItem,
-                  0
-                )
+                const remainingCents = balanceByCondemnationId[condemnation.id] ?? 0
 
                 return (
                   <TableRow key={condemnation.id}>
@@ -243,14 +314,33 @@ export function CondemnationsView({
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap justify-end gap-2">
-                        <Button size="sm" variant="outline" onClick={() => addPayment(condemnation)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={
+                            remainingCents <= 0 || condemnation.status === "paid"
+                          }
+                          onClick={() => addPayment(condemnation)}
+                        >
                           <Plus className="size-4" />
                           Pagamento
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => transformToInstallment(condemnation.id)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={
+                            condemnation.status === "paid" ||
+                            condemnation.status === "installment"
+                          }
+                          onClick={() => transformToInstallment(condemnation.id)}
+                        >
                           Parcelar
                         </Button>
-                        <Button size="sm" onClick={() => markAsPaid(condemnation.id)}>
+                        <Button
+                          size="sm"
+                          disabled={condemnation.status === "paid"}
+                          onClick={() => markAsPaid(condemnation.id)}
+                        >
                           Quitar
                         </Button>
                       </div>
@@ -260,6 +350,25 @@ export function CondemnationsView({
               })}
             </TableBody>
           </Table>
+          {filtered.length === 0 ? (
+            <EmptyState
+              className="mt-4"
+              title="Nenhuma condenacao encontrada"
+              description="Ajuste os filtros para localizar condenacoes por processo, partes ou status."
+            />
+          ) : (
+            <ListPagination
+              canNextPage={canNextPage}
+              canPreviousPage={canPreviousPage}
+              endIndex={endIndex}
+              onNextPage={setNextPage}
+              onPreviousPage={setPreviousPage}
+              page={page}
+              startIndex={startIndex}
+              totalCount={filtered.length}
+              totalPages={totalPages}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

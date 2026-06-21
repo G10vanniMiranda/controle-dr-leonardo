@@ -2,11 +2,12 @@
 
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { CheckCircle2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { monthlyBillCategoryLabels } from "@/lib/mock-data"
+import { formatMoneyInput, parseMoneyToNumber } from "@/lib/input-masks"
+import { monthlyBillCategoryLabels } from "@/lib/domain"
+import { FormFeedback } from "@/components/app/form-feedback"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -24,7 +25,10 @@ const billSchema = z.object({
   dueDate: z.string().min(1, "Informe a data de vencimento."),
   notes: z.string().optional(),
   recurring: z.boolean(),
-  value: z.coerce.number().min(1, "Informe o valor."),
+  value: z
+    .string()
+    .refine((value) => parseMoneyToNumber(value) > 0, "Informe o valor.")
+    .transform(parseMoneyToNumber),
 })
 
 type BillInput = z.input<typeof billSchema>
@@ -32,6 +36,7 @@ type BillOutput = z.output<typeof billSchema>
 
 export function MonthlyBillForm() {
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
   const form = useForm<BillInput, unknown, BillOutput>({
     resolver: zodResolver(billSchema),
     defaultValues: {
@@ -40,12 +45,14 @@ export function MonthlyBillForm() {
       dueDate: new Date().toISOString().slice(0, 10),
       notes: "",
       recurring: false,
-      value: 100,
+      value: "R$ 100,00",
     },
   })
 
   function onSubmit() {
+    setSaving(true)
     setSaved(true)
+    window.setTimeout(() => setSaving(false), 450)
   }
 
   return (
@@ -75,7 +82,17 @@ export function MonthlyBillForm() {
               </select>
             </Field>
             <Field label="Valor em reais" error={form.formState.errors.value?.message}>
-              <Input type="number" min="1" step="0.01" {...form.register("value")} />
+              <Input
+                inputMode="numeric"
+                placeholder="R$ 100,00"
+                {...form.register("value")}
+                onChange={(event) => {
+                  form.setValue("value", formatMoneyInput(event.target.value), {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }}
+              />
             </Field>
             <Field label="Data de vencimento" error={form.formState.errors.dueDate?.message}>
               <Input type="date" {...form.register("dueDate")} />
@@ -100,14 +117,15 @@ export function MonthlyBillForm() {
           </Field>
 
           {saved ? (
-            <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-[#9db8ff]">
-              <CheckCircle2 className="size-4" />
+            <FormFeedback>
               Conta salva no mock. Depois, este fluxo gravara em monthly_bills.
-            </div>
+            </FormFeedback>
           ) : null}
 
           <div className="flex justify-end">
-            <Button type="submit">Salvar conta</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? "Salvando..." : "Salvar conta"}
+            </Button>
           </div>
         </form>
       </CardContent>
