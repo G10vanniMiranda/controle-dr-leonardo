@@ -1,11 +1,13 @@
 import { MonthlyBillForm } from "@/components/app/monthly-bill-form"
 import { MonthlyBillsView } from "@/components/app/monthly-bills-view"
-import { getMonthlyBills } from "@/lib/services/monthly-bills-service"
+import { getMonthlyBillsAsync } from "@/lib/services/server/monthly-bills-service"
 
-export default function ContasPage() {
+export default async function ContasPage() {
+  const bills = await getMonthlyBillsAsync()
+
   return (
     <div className="grid gap-6">
-      <MonthlyBillsView bills={getMonthlyBills()} />
+      <MonthlyBillsView bills={bills} />
       <MonthlyBillForm />
     </div>
   )

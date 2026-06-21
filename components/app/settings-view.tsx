@@ -1,7 +1,7 @@
 import { CheckCircle2, LockKeyhole, ShieldCheck, UserCog } from "lucide-react"
 
+import { type ActivityLog } from "@/lib/domain"
 import { dateFormatter } from "@/lib/formatters"
-import { getActivityLogs } from "@/lib/services/activity-logs-service"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -27,7 +27,7 @@ const securityItems = [
   "Logs de atividades importantes previstos",
 ]
 
-export function SettingsView() {
+export function SettingsView({ activityLogs }: { activityLogs: ActivityLog[] }) {
   return (
     <div className="grid gap-6">
       <div>
@@ -116,7 +116,7 @@ export function SettingsView() {
         <CardHeader>
           <CardTitle>Logs de atividade</CardTitle>
           <CardDescription>
-            Historico mockado das principais operacoes do sistema.
+            Historico das principais operacoes do sistema.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -131,7 +131,7 @@ export function SettingsView() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {getActivityLogs().map((log) => (
+              {activityLogs.map((log) => (
                 <TableRow key={log.id}>
                   <TableCell>
                     <div className="font-medium text-foreground">{log.action}</div>

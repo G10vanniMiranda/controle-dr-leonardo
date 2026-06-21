@@ -35,7 +35,7 @@ function NavLink({
       className={cn(
         "group relative flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground",
         active &&
-          "bg-hover text-foreground before:absolute before:left-0 before:h-5 before:w-1 before:rounded-full before:bg-primary"
+        "bg-hover text-foreground before:absolute before:left-0 before:h-5 before:w-1 before:rounded-full before:bg-primary"
       )}
     >
       <Icon className="size-4" />
@@ -116,7 +116,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <span className="sr-only">Abrir menu</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="left-4 top-4 h-[calc(100svh-2rem)] max-w-[22rem] translate-x-0 translate-y-0 overflow-y-auto p-4 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left">
+              <DialogContent className="left-4 top-4 h-[calc(100svh-2rem)] max-w-88 translate-x-0 translate-y-0 overflow-y-auto p-4 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left">
                 <DialogHeader className="sr-only">
                   <DialogTitle>Menu principal</DialogTitle>
                 </DialogHeader>
@@ -171,7 +171,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               className={cn(
                 "relative flex flex-col items-center gap-1 rounded-xl px-2 py-2 text-[0.68rem] text-muted-foreground transition-colors hover:bg-hover hover:text-foreground",
                 active &&
-                  "bg-hover text-foreground before:absolute before:top-1 before:h-0.5 before:w-6 before:rounded-full before:bg-primary"
+                "bg-hover text-foreground before:absolute before:top-1 before:h-0.5 before:w-6 before:rounded-full before:bg-primary"
               )}
             >
               <item.icon className="size-4" />

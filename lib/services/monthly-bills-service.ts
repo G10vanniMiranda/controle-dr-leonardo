@@ -6,7 +6,6 @@ import {
 } from "@/lib/mock-data"
 import { type MonthlyBill } from "@/lib/domain"
 import { getDataProvider } from "@/lib/services/data-provider"
-import * as supabaseService from "@/lib/services/supabase/monthly-bills-service"
 
 export type MonthlyBillInput = Omit<MonthlyBill, "id" | "paidAt" | "status">
 export type MonthlyBillUpdateInput = Partial<MonthlyBillInput> &
@@ -14,7 +13,9 @@ export type MonthlyBillUpdateInput = Partial<MonthlyBillInput> &
 
 export function getMonthlyBills() {
   if (getDataProvider() === "supabase") {
-    return supabaseService.getMonthlyBills()
+    throw new Error(
+      "Import getMonthlyBillsAsync from '@/lib/services/server/monthly-bills-service' in Server Components."
+    )
   }
 
   return getMockMonthlyBills()
@@ -22,7 +23,9 @@ export function getMonthlyBills() {
 
 export function getMonthlyBillsByMonthForProvider(month: string) {
   if (getDataProvider() === "supabase") {
-    return supabaseService.getMonthlyBillsByMonth(month)
+    throw new Error(
+      "Import getMonthlyBillsByMonthAsync from '@/lib/services/server/monthly-bills-service' in Server Components."
+    )
   }
 
   return getMonthlyBillsByMonth(month)
@@ -30,7 +33,9 @@ export function getMonthlyBillsByMonthForProvider(month: string) {
 
 export function getMonthlyBillsSummaryForProvider(month: string) {
   if (getDataProvider() === "supabase") {
-    return supabaseService.getMonthlyBillsSummary(month)
+    throw new Error(
+      "Import getMonthlyBillsSummaryAsync from '@/lib/services/server/monthly-bills-service' in Server Components."
+    )
   }
 
   return getMonthlyBillsSummary(month)
@@ -43,7 +48,9 @@ export {
 
 export function createMonthlyBill(input: MonthlyBillInput): MonthlyBill {
   if (getDataProvider() === "supabase") {
-    return supabaseService.createMonthlyBill(input)
+    throw new Error(
+      "Import createMonthlyBillAsync from '@/lib/services/server/monthly-bills-service' in Server Components."
+    )
   }
 
   return {
@@ -55,7 +62,9 @@ export function createMonthlyBill(input: MonthlyBillInput): MonthlyBill {
 
 export function updateMonthlyBill(id: string, input: MonthlyBillUpdateInput) {
   if (getDataProvider() === "supabase") {
-    return supabaseService.updateMonthlyBill(id, input)
+    throw new Error(
+      "Import updateMonthlyBillAsync from '@/lib/services/server/monthly-bills-service' in Server Components."
+    )
   }
 
   const currentBill = monthlyBills.find((bill) => bill.id === id)
@@ -64,7 +73,9 @@ export function updateMonthlyBill(id: string, input: MonthlyBillUpdateInput) {
 
 export function markMonthlyBillAsPaid(id: string) {
   if (getDataProvider() === "supabase") {
-    return supabaseService.markMonthlyBillAsPaid(id)
+    throw new Error(
+      "Import markMonthlyBillAsPaidAsync from '@/lib/services/server/monthly-bills-service' in Server Components."
+    )
   }
 
   return updateMonthlyBill(id, {

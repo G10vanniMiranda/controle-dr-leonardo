@@ -11,7 +11,7 @@ import {
   formatMoneyInput,
   parseMoneyToNumber,
 } from "@/lib/input-masks"
-import { type Client, caseStatusLabels } from "@/lib/domain"
+import { type Client, type LegalCase, caseStatusLabels } from "@/lib/domain"
 import { FormFeedback } from "@/components/app/form-feedback"
 import { Button } from "@/components/ui/button"
 import {
@@ -43,24 +43,33 @@ const caseSchema = z.object({
 
 type CaseFormValues = z.infer<typeof caseSchema>
 
-export function CaseForm({ clients }: { clients: Client[] }) {
+export function CaseForm({
+  clients,
+  legalCase,
+}: {
+  clients: Client[]
+  legalCase?: LegalCase
+}) {
+  const mode = legalCase ? "edit" : "create"
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const form = useForm<CaseFormValues>({
     resolver: zodResolver(caseSchema),
     defaultValues: {
-      actionType: "",
-      caseNumber: "",
-      claimValue: "",
-      clientId: clients[0]?.id ?? "",
-      court: "",
-      district: "Manaus",
-      notes: "",
-      opposingParty: "",
-      proceduralPhase: "",
-      startDate: "",
-      state: "AM",
-      status: "in_review",
+      actionType: legalCase?.actionType ?? "",
+      caseNumber: legalCase?.caseNumber ?? "",
+      claimValue: legalCase
+        ? formatMoneyInput(String(legalCase.claimValueCents))
+        : "",
+      clientId: legalCase?.clientId ?? clients[0]?.id ?? "",
+      court: legalCase?.court ?? "",
+      district: legalCase?.district ?? "Manaus",
+      notes: legalCase?.notes ?? "",
+      opposingParty: legalCase?.opposingParty ?? "",
+      proceduralPhase: legalCase?.proceduralPhase ?? "",
+      startDate: legalCase?.startDate ?? "",
+      state: legalCase?.state ?? "AM",
+      status: legalCase?.status ?? "in_review",
     },
   })
 
@@ -73,9 +82,13 @@ export function CaseForm({ clients }: { clients: Client[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Dados do processo</CardTitle>
+        <CardTitle>
+          {mode === "edit" ? "Editar dados do processo" : "Dados do processo"}
+        </CardTitle>
         <CardDescription>
-          Todo processo ja nasce vinculado a um cliente, conforme a regra de negocio.
+          {mode === "edit"
+            ? "Alteracoes simuladas no mock, mantendo o processo vinculado a um cliente."
+            : "Todo processo ja nasce vinculado a um cliente, conforme a regra de negocio."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -163,7 +176,9 @@ export function CaseForm({ clients }: { clients: Client[] }) {
 
           {saved ? (
             <FormFeedback>
-              Processo salvo no mock. Depois, este fluxo gravara em Supabase.
+              {mode === "edit"
+                ? "Processo atualizado no mock. Depois, este fluxo gravara em Supabase."
+                : "Processo salvo no mock. Depois, este fluxo gravara em Supabase."}
             </FormFeedback>
           ) : null}
 
@@ -172,7 +187,11 @@ export function CaseForm({ clients }: { clients: Client[] }) {
               <Link href="/processos">Cancelar</Link>
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? "Salvando..." : "Salvar processo"}
+              {saving
+                ? "Salvando..."
+                : mode === "edit"
+                  ? "Atualizar processo"
+                  : "Salvar processo"}
             </Button>
           </div>
         </form>

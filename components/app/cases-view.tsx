@@ -12,6 +12,7 @@ import {
 
 import { brlFormatter } from "@/lib/formatters"
 import {
+  type Client,
   type LegalCase,
   caseStatusLabels,
 } from "@/lib/domain"
@@ -22,7 +23,6 @@ import {
   SortHeader,
   useListControls,
 } from "@/components/app/list-controls"
-import { getClientById } from "@/lib/services/clients-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -53,27 +53,27 @@ import {
 
 type CaseSortKey = "caseNumber" | "claimValue" | "client" | "status"
 
-const caseSortAccessors: Record<
-  CaseSortKey,
-  (legalCase: LegalCase) => string | number
-> = {
-  caseNumber: (legalCase) => legalCase.caseNumber,
-  claimValue: (legalCase) => legalCase.claimValueCents,
-  client: (legalCase) => getClientById(legalCase.clientId)?.fullName ?? "",
-  status: (legalCase) => caseStatusLabels[legalCase.status],
-}
-
-export function CasesView({ cases }: { cases: LegalCase[] }) {
+export function CasesView({
+  cases,
+  clients,
+}: {
+  cases: LegalCase[]
+  clients: Client[]
+}) {
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [visibleCases, setVisibleCases] = useState(cases)
   const [feedback, setFeedback] = useState("")
+  const clientsById = useMemo(
+    () => new Map(clients.map((client) => [client.id, client])),
+    [clients]
+  )
 
   const filteredCases = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
 
     return visibleCases.filter((legalCase) => {
-      const client = getClientById(legalCase.clientId)
+      const client = clientsById.get(legalCase.clientId)
       const matchesStatus = status === "todos" || legalCase.status === status
       const matchesQuery =
         !normalizedQuery ||
@@ -84,7 +84,7 @@ export function CasesView({ cases }: { cases: LegalCase[] }) {
 
       return matchesStatus && matchesQuery
     })
-  }, [query, status, visibleCases])
+  }, [clientsById, query, status, visibleCases])
 
   const {
     canNextPage,
@@ -102,14 +102,20 @@ export function CasesView({ cases }: { cases: LegalCase[] }) {
     initialSort: { direction: "asc", field: "caseNumber" },
     items: filteredCases,
     pageSize: 6,
-    sortAccessors: caseSortAccessors,
+    sortAccessors: {
+      caseNumber: (legalCase) => legalCase.caseNumber,
+      claimValue: (legalCase) => legalCase.claimValueCents,
+      client: (legalCase) =>
+        clientsById.get(legalCase.clientId)?.fullName ?? "",
+      status: (legalCase) => caseStatusLabels[legalCase.status],
+    },
   })
 
   function removeCase(id: string) {
     setVisibleCases((currentCases) =>
       currentCases.filter((legalCase) => legalCase.id !== id)
     )
-    setFeedback("Processo removido do mock da sessao.")
+    setFeedback("Processo removido desta visualizacao.")
   }
 
   return (
@@ -172,7 +178,7 @@ export function CasesView({ cases }: { cases: LegalCase[] }) {
         <CardHeader>
           <CardTitle>Processos cadastrados</CardTitle>
           <CardDescription>
-            {filteredCases.length} processo(s) encontrado(s) no mock local.
+            {filteredCases.length} processo(s) encontrado(s).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -218,7 +224,7 @@ export function CasesView({ cases }: { cases: LegalCase[] }) {
             </TableHeader>
             <TableBody>
               {pageItems.map((legalCase) => {
-                const client = getClientById(legalCase.clientId)
+                const client = clientsById.get(legalCase.clientId)
 
                 return (
                   <TableRow key={legalCase.id}>
@@ -275,8 +281,9 @@ export function CasesView({ cases }: { cases: LegalCase[] }) {
                             <DialogHeader>
                               <DialogTitle>Excluir processo?</DialogTitle>
                               <DialogDescription>
-                                Esta remocao acontece apenas no mock da sessao.
-                                No banco real, tambem criaremos log de atividade.
+                                Esta remocao acontece apenas nesta visualizacao
+                                por enquanto. A exclusao persistente sera ligada
+                                ao fluxo Supabase com log de atividade.
                               </DialogDescription>
                             </DialogHeader>
                             <div className="flex justify-end gap-2">

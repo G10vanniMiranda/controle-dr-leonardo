@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dr. Leonardo Controle
 
-## Getting Started
+Sistema web de controle juridico e financeiro para escritorio de advocacia.
 
-First, run the development server:
+## Desenvolvimento
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ambiente local sem banco:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+NEXT_PUBLIC_DATA_PROVIDER=mock
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Validacao
 
-## Learn More
+```bash
+npm run lint
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Producao
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Antes de publicar, rode:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run check:production
+```
 
-## Deploy on Vercel
+O deploy real deve usar:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+NEXT_PUBLIC_DATA_PROVIDER=supabase
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## O que ainda bloqueia producao real
+
+- Implementar os services em `lib/services/supabase/*` sem `notImplementedForSupabase`.
+- Aplicar as migrations em `supabase/migrations`.
+- Configurar Supabase Auth e confirmar que `proxy.ts` protege todas as rotas privadas.
+- Configurar Storage protegido para documentos.
+- Executar `npm run lint`, `npm run build` e `npm run check:production` antes do deploy.
+
+Enquanto `NEXT_PUBLIC_DATA_PROVIDER=mock`, o sistema serve para validacao visual e funcional, mas nao deve ser usado em producao com dados reais.

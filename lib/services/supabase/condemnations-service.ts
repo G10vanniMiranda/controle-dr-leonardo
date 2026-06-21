@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Condemnation, type CondemnationPayment } from "@/lib/domain"
 import { notImplementedForSupabase } from "@/lib/services/data-provider"
 import type {

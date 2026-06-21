@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
+import { type Client } from "@/lib/domain"
 import { formatCpfCnpj, formatPhone, onlyDigits } from "@/lib/input-masks"
 import { FormFeedback } from "@/components/app/form-feedback"
 import { Button } from "@/components/ui/button"
@@ -37,19 +38,20 @@ const clientSchema = z.object({
 
 type ClientFormValues = z.infer<typeof clientSchema>
 
-export function ClientForm() {
+export function ClientForm({ client }: { client?: Client }) {
+  const mode = client ? "edit" : "create"
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
-      address: "",
-      documentNumber: "",
-      email: "",
-      fullName: "",
-      notes: "",
-      phone: "",
-      status: "active",
+      address: client?.address ?? "",
+      documentNumber: client?.documentNumber ?? "",
+      email: client?.email ?? "",
+      fullName: client?.fullName ?? "",
+      notes: client?.notes ?? "",
+      phone: client?.phone ?? "",
+      status: client?.status ?? "active",
     },
   })
 
@@ -62,9 +64,13 @@ export function ClientForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Dados do cliente</CardTitle>
+        <CardTitle>
+          {mode === "edit" ? "Editar dados do cliente" : "Dados do cliente"}
+        </CardTitle>
         <CardDescription>
-          Formulario mockado com a mesma validacao que sera usada no Supabase.
+          {mode === "edit"
+            ? "Alteracoes simuladas no mock, mantendo a validacao prevista para o Supabase."
+            : "Formulario mockado com a mesma validacao que sera usada no Supabase."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -125,7 +131,9 @@ export function ClientForm() {
 
           {saved ? (
             <FormFeedback>
-              Cliente salvo no mock. A persistencia real sera ligada ao banco no final.
+              {mode === "edit"
+                ? "Cliente atualizado no mock. A persistencia real sera ligada ao banco no final."
+                : "Cliente salvo no mock. A persistencia real sera ligada ao banco no final."}
             </FormFeedback>
           ) : null}
 
@@ -134,7 +142,11 @@ export function ClientForm() {
               <Link href="/clientes">Cancelar</Link>
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? "Salvando..." : "Salvar cliente"}
+              {saving
+                ? "Salvando..."
+                : mode === "edit"
+                  ? "Atualizar cliente"
+                  : "Salvar cliente"}
             </Button>
           </div>
         </form>

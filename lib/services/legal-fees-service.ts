@@ -7,14 +7,15 @@ import {
 } from "@/lib/mock-data"
 import { type FeeInstallment, type LegalFee } from "@/lib/domain"
 import { getDataProvider } from "@/lib/services/data-provider"
-import * as supabaseService from "@/lib/services/supabase/legal-fees-service"
 
 export type LegalFeeInput = Omit<LegalFee, "id" | "status">
 export type LegalFeeUpdateInput = Partial<LegalFeeInput> & Pick<Partial<LegalFee>, "status">
 
 export function getLegalFees() {
   if (getDataProvider() === "supabase") {
-    return supabaseService.getLegalFees()
+    throw new Error(
+      "Import getLegalFeesAsync from '@/lib/services/server/legal-fees-service' in Server Components."
+    )
   }
 
   return legalFees
@@ -22,7 +23,9 @@ export function getLegalFees() {
 
 export function getLegalFeeInstallments(legalFeeId: string) {
   if (getDataProvider() === "supabase") {
-    return supabaseService.getLegalFeeInstallments(legalFeeId)
+    throw new Error(
+      "Import getLegalFeeInstallmentsAsync from '@/lib/services/server/legal-fees-service' in Server Components."
+    )
   }
 
   return getFeeInstallmentsByLegalFeeId(legalFeeId)
@@ -35,7 +38,7 @@ export function generateInstallmentPreviewForProvider(input: {
   installmentValueCents: number
 }) {
   if (getDataProvider() === "supabase") {
-    return supabaseService.generateInstallmentPreview(input)
+    return generateInstallmentPreview(input)
   }
 
   return generateInstallmentPreview(input)
@@ -43,7 +46,9 @@ export function generateInstallmentPreviewForProvider(input: {
 
 export function getLegalFeeSummaryForProvider(legalFeeId: string) {
   if (getDataProvider() === "supabase") {
-    return supabaseService.getLegalFeeSummary(legalFeeId)
+    throw new Error(
+      "Import getLegalFeeSummaryAsync from '@/lib/services/server/legal-fees-service' in Server Components."
+    )
   }
 
   return getLegalFeeSummary(legalFeeId)
@@ -56,7 +61,9 @@ export {
 
 export function createLegalFee(input: LegalFeeInput): LegalFee {
   if (getDataProvider() === "supabase") {
-    return supabaseService.createLegalFee(input)
+    throw new Error(
+      "Import createLegalFeeAsync from '@/lib/services/server/legal-fees-service' in Server Components."
+    )
   }
 
   return {
@@ -68,7 +75,9 @@ export function createLegalFee(input: LegalFeeInput): LegalFee {
 
 export function updateLegalFee(id: string, input: LegalFeeUpdateInput) {
   if (getDataProvider() === "supabase") {
-    return supabaseService.updateLegalFee(id, input)
+    throw new Error(
+      "Import updateLegalFeeAsync from '@/lib/services/server/legal-fees-service' in Server Components."
+    )
   }
 
   const currentFee = legalFees.find((legalFee) => legalFee.id === id)
@@ -77,7 +86,9 @@ export function updateLegalFee(id: string, input: LegalFeeUpdateInput) {
 
 export function markFeeInstallmentAsPaid(id: string): FeeInstallment | undefined {
   if (getDataProvider() === "supabase") {
-    return supabaseService.markFeeInstallmentAsPaid(id)
+    throw new Error(
+      "Import markFeeInstallmentAsPaidAsync from '@/lib/services/server/legal-fees-service' in Server Components."
+    )
   }
 
   const installment = feeInstallments.find((item) => item.id === id)

@@ -23,7 +23,6 @@ import {
   SortHeader,
   useListControls,
 } from "@/components/app/list-controls"
-import { markMonthlyBillAsPaid } from "@/lib/services/monthly-bills-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -114,16 +113,24 @@ export function MonthlyBillsView({ bills }: { bills: MonthlyBill[] }) {
     .reduce((total, bill) => total + bill.valueCents, 0)
 
   function markAsPaid(id: string) {
-    const paidBill = markMonthlyBillAsPaid(id)
-
-    if (!paidBill) {
-      return
-    }
+    const paidBill = visibleBills.find((bill) => bill.id === id)
 
     setVisibleBills((currentBills) =>
-      currentBills.map((bill) => (bill.id === id ? paidBill : bill))
+      currentBills.map((bill) =>
+        bill.id === id
+          ? {
+              ...bill,
+              paidAt: new Date().toISOString().slice(0, 10),
+              status: "paid",
+            }
+          : bill
+      )
     )
-    setFeedback("Conta marcada como paga no mock da sessao.")
+    setFeedback(
+      paidBill
+        ? "Conta marcada como paga nesta visualizacao."
+        : "Conta nao encontrada nesta visualizacao."
+    )
   }
 
   return (
@@ -137,7 +144,7 @@ export function MonthlyBillsView({ bills }: { bills: MonthlyBill[] }) {
             Contas mensais
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Despesas, recorrencias, vencimentos e totais mensais em modo mock.
+            Despesas, recorrencias, vencimentos e totais mensais.
           </p>
         </div>
         <Button asChild>
@@ -226,7 +233,7 @@ export function MonthlyBillsView({ bills }: { bills: MonthlyBill[] }) {
         <CardHeader>
           <CardTitle>Despesas do mes</CardTitle>
           <CardDescription>
-            {filteredBills.length} conta(s) encontrada(s) no mock local.
+            {filteredBills.length} conta(s) encontrada(s).
           </CardDescription>
         </CardHeader>
         <CardContent>

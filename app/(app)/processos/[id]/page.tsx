@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card"
 import { brlFormatter, dateFormatter } from "@/lib/formatters"
 import { caseStatusLabels } from "@/lib/domain"
-import { getCaseById } from "@/lib/services/cases-service"
+import { getCaseByIdAsync } from "@/lib/services/server/cases-service"
 
 export default async function ProcessoDetalhePage({
   params,
@@ -22,7 +22,7 @@ export default async function ProcessoDetalhePage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const legalCase = getCaseById(id)
+  const legalCase = await getCaseByIdAsync(id)
 
   if (!legalCase) {
     notFound()

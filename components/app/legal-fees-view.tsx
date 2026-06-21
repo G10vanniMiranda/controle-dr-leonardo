@@ -11,6 +11,7 @@ import {
 
 import { brlFormatter, dateFormatter } from "@/lib/formatters"
 import {
+  type Client,
   type FeeInstallment,
   type LegalFee,
   feeInstallmentStatusLabels,
@@ -23,12 +24,6 @@ import {
   SortHeader,
   useListControls,
 } from "@/components/app/list-controls"
-import {
-  getLegalFeeInstallments,
-  getLegalFeeSummary,
-  markFeeInstallmentAsPaid,
-} from "@/lib/services/legal-fees-service"
-import { getClientById } from "@/lib/services/clients-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -54,27 +49,47 @@ const legalFeeSortAccessors: Record<
   LegalFeeSortKey,
   (legalFee: LegalFee) => number | string
 > = {
-  client: (legalFee) => getClientById(legalFee.clientId)?.fullName ?? "",
+  client: () => "",
   contract: (legalFee) => legalFee.contractName,
-  installments: (legalFee) => getLegalFeeSummary(legalFee.id).paidCount,
+  installments: () => 0,
   status: (legalFee) => legalFeeStatusLabels[legalFee.status],
   total: (legalFee) => legalFee.totalValueCents,
 }
 
-export function LegalFeesView({ legalFees }: { legalFees: LegalFee[] }) {
+type LegalFeeSummary = {
+  overdueCents: number
+  paidCents: number
+  paidCount: number
+  pendingCents: number
+  totalCount: number
+}
+
+export function LegalFeesView({
+  clients,
+  installments: initialInstallments,
+  legalFees,
+  summariesByLegalFeeId,
+}: {
+  clients: Client[]
+  installments: FeeInstallment[]
+  legalFees: LegalFee[]
+  summariesByLegalFeeId: Record<string, LegalFeeSummary>
+}) {
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [selectedFeeId, setSelectedFeeId] = useState(legalFees[0]?.id ?? "")
   const [feedback, setFeedback] = useState("")
-  const [installments, setInstallments] = useState(() =>
-    legalFees.flatMap((legalFee) => getLegalFeeInstallments(legalFee.id))
+  const [installments, setInstallments] = useState(initialInstallments)
+  const clientsById = useMemo(
+    () => new Map(clients.map((client) => [client.id, client])),
+    [clients]
   )
 
   const filteredFees = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
 
     return legalFees.filter((legalFee) => {
-      const client = getClientById(legalFee.clientId)
+      const client = clientsById.get(legalFee.clientId)
       const matchesStatus = status === "todos" || legalFee.status === status
       const matchesQuery =
         !normalizedQuery ||
@@ -83,7 +98,7 @@ export function LegalFeesView({ legalFees }: { legalFees: LegalFee[] }) {
 
       return matchesStatus && matchesQuery
     })
-  }, [legalFees, query, status])
+  }, [clientsById, legalFees, query, status])
 
   const {
     canNextPage,
@@ -101,7 +116,12 @@ export function LegalFeesView({ legalFees }: { legalFees: LegalFee[] }) {
     initialSort: { direction: "asc", field: "contract" },
     items: filteredFees,
     pageSize: 6,
-    sortAccessors: legalFeeSortAccessors,
+    sortAccessors: {
+      ...legalFeeSortAccessors,
+      client: (legalFee) => clientsById.get(legalFee.clientId)?.fullName ?? "",
+      installments: (legalFee) =>
+        summariesByLegalFeeId[legalFee.id]?.paidCount ?? 0,
+    },
   })
 
   const selectedFee =
@@ -120,18 +140,19 @@ export function LegalFeesView({ legalFees }: { legalFees: LegalFee[] }) {
     .reduce((total, installment) => total + installment.valueCents, 0)
 
   function markAsPaid(id: string) {
-    const paidInstallment = markFeeInstallmentAsPaid(id)
-
-    if (!paidInstallment) {
-      return
-    }
-
     setInstallments((currentInstallments) =>
       currentInstallments.map((installment) =>
-        installment.id === id ? paidInstallment : installment
+        installment.id === id
+          ? {
+              ...installment,
+              paidAt: new Date().toISOString().slice(0, 10),
+              paymentMethod: "PIX",
+              status: "paid",
+            }
+          : installment
       )
     )
-    setFeedback("Parcela marcada como paga no mock da sessao.")
+    setFeedback("Parcela marcada como paga nesta visualizacao.")
   }
 
   return (
@@ -145,7 +166,7 @@ export function LegalFeesView({ legalFees }: { legalFees: LegalFee[] }) {
             Honorarios
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Contratos, geracao de parcelas, pagamentos e saldo restante em modo mock.
+            Contratos, geracao de parcelas, pagamentos e saldo restante.
           </p>
         </div>
         <Button asChild>
@@ -253,8 +274,14 @@ export function LegalFeesView({ legalFees }: { legalFees: LegalFee[] }) {
             </TableHeader>
             <TableBody>
               {pageItems.map((legalFee) => {
-                const client = getClientById(legalFee.clientId)
-                const summary = getLegalFeeSummary(legalFee.id)
+                const client = clientsById.get(legalFee.clientId)
+                const summary = summariesByLegalFeeId[legalFee.id] ?? {
+                  overdueCents: 0,
+                  paidCents: 0,
+                  paidCount: 0,
+                  pendingCents: 0,
+                  totalCount: 0,
+                }
 
                 return (
                   <TableRow

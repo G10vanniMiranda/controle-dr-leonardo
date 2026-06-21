@@ -21,7 +21,6 @@ import {
   SortHeader,
   useListControls,
 } from "@/components/app/list-controls"
-import { getCasesByClientId } from "@/lib/services/clients-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -53,13 +52,19 @@ import {
 type ClientSortKey = "cases" | "client" | "contact" | "status"
 
 const clientSortAccessors: Record<ClientSortKey, (client: Client) => string | number> = {
-  cases: (client) => getCasesByClientId(client.id).length,
+  cases: () => 0,
   client: (client) => client.fullName,
   contact: (client) => client.email,
   status: (client) => clientStatusLabels[client.status],
 }
 
-export function ClientsView({ clients }: { clients: Client[] }) {
+export function ClientsView({
+  caseCountsByClientId = {},
+  clients,
+}: {
+  caseCountsByClientId?: Record<string, number>
+  clients: Client[]
+}) {
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [visibleClients, setVisibleClients] = useState(clients)
@@ -96,14 +101,17 @@ export function ClientsView({ clients }: { clients: Client[] }) {
     initialSort: { direction: "asc", field: "client" },
     items: filteredClients,
     pageSize: 6,
-    sortAccessors: clientSortAccessors,
+    sortAccessors: {
+      ...clientSortAccessors,
+      cases: (client) => caseCountsByClientId[client.id] ?? 0,
+    },
   })
 
   function removeClient(id: string) {
     setVisibleClients((currentClients) =>
       currentClients.filter((client) => client.id !== id)
     )
-    setFeedback("Cliente removido do mock da sessao.")
+    setFeedback("Cliente removido desta visualizacao.")
   }
 
   return (
@@ -163,7 +171,7 @@ export function ClientsView({ clients }: { clients: Client[] }) {
         <CardHeader>
           <CardTitle>Clientes cadastrados</CardTitle>
           <CardDescription>
-            {filteredClients.length} registro(s) encontrado(s) no mock local.
+            {filteredClients.length} registro(s) encontrado(s).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -208,7 +216,7 @@ export function ClientsView({ clients }: { clients: Client[] }) {
             </TableHeader>
             <TableBody>
               {pageItems.map((client) => {
-                const casesCount = getCasesByClientId(client.id).length
+                const casesCount = caseCountsByClientId[client.id] ?? 0
 
                 return (
                   <TableRow key={client.id}>
@@ -257,9 +265,9 @@ export function ClientsView({ clients }: { clients: Client[] }) {
                             <DialogHeader>
                               <DialogTitle>Excluir cliente?</DialogTitle>
                               <DialogDescription>
-                                Esta acao remove apenas o item da lista mockada
-                                nesta sessao. No banco real, ela exigira RLS e
-                                log de atividade.
+                                Esta acao remove o item apenas desta visualizacao
+                                por enquanto. A exclusao persistente sera ligada
+                                ao fluxo Supabase com log de atividade.
                               </DialogDescription>
                             </DialogHeader>
                             <div className="flex justify-end gap-2">

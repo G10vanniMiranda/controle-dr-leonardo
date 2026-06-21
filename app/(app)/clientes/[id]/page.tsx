@@ -24,9 +24,9 @@ import {
 import { brlFormatter, dateFormatter } from "@/lib/formatters"
 import { caseStatusLabels, clientStatusLabels } from "@/lib/domain"
 import {
-  getCasesByClientId,
-  getClientById,
-} from "@/lib/services/clients-service"
+  getCasesByClientIdAsync,
+  getClientByIdAsync,
+} from "@/lib/services/server/clients-service"
 
 export default async function ClienteDetalhePage({
   params,
@@ -34,13 +34,13 @@ export default async function ClienteDetalhePage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const client = getClientById(id)
+  const client = await getClientByIdAsync(id)
 
   if (!client) {
     notFound()
   }
 
-  const linkedCases = getCasesByClientId(client.id)
+  const linkedCases = await getCasesByClientIdAsync(client.id)
   const totalClaimValue = linkedCases.reduce(
     (total, legalCase) => total + legalCase.claimValueCents,
     0
