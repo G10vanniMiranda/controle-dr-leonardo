@@ -1,6 +1,8 @@
 import { DocumentsView } from "@/components/app/documents-view"
-import { getDocuments } from "@/lib/services/documents-service"
+import { getDocumentsAsync } from "@/lib/services/server/documents-service"
 
-export default function DocumentosPage() {
-  return <DocumentsView documents={getDocuments()} />
+export default async function DocumentosPage() {
+  const documents = await getDocumentsAsync()
+
+  return <DocumentsView documents={documents} />
 }

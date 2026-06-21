@@ -1,8 +1,7 @@
 import { Download, FileSpreadsheet, FileText } from "lucide-react"
 
+import { type Client } from "@/lib/domain"
 import { brlFormatter } from "@/lib/formatters"
-import { getClients } from "@/lib/services/clients-service"
-import { getReports } from "@/lib/services/reports-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,9 +21,22 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-export function ReportsView() {
-  const reports = getReports()
+type ReportItem = {
+  id: string
+  title: string
+  description: string
+  status: string
+  valueCents?: number
+  valueText?: string
+}
 
+export function ReportsView({
+  clients,
+  reports,
+}: {
+  clients: Client[]
+  reports: ReportItem[]
+}) {
   return (
     <div className="grid gap-6">
       <div>
@@ -50,7 +62,7 @@ export function ReportsView() {
           <Input type="month" defaultValue="2026-06" />
           <select className="h-10 rounded-xl border border-input bg-input px-3 text-sm text-foreground focus:border-ring focus:ring-2 focus:ring-ring/35 focus:outline-none">
             <option>Todos os clientes</option>
-            {getClients().map((client) => (
+            {clients.map((client) => (
               <option key={client.id}>{client.fullName}</option>
             ))}
           </select>
@@ -131,7 +143,7 @@ export function ReportsView() {
   )
 }
 
-function formatReportValue(report: ReturnType<typeof getReports>[number]) {
+function formatReportValue(report: ReportItem) {
   return typeof report.valueCents === "number"
     ? brlFormatter.format(report.valueCents / 100)
     : report.valueText

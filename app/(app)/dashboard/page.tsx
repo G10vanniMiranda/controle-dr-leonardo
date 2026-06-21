@@ -19,8 +19,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { dashboardMetrics, recentMatters } from "@/lib/dashboard-data"
+import { getMonthlyBillsSummaryAsync } from "@/lib/services/server/monthly-bills-service"
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const monthlyBillsSummary = await getMonthlyBillsSummaryAsync("2026-06")
+
   return (
     <div className="grid gap-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -64,7 +67,7 @@ export default function DashboardPage() {
 
       <DashboardCharts />
 
-      <FinancialDashboard />
+      <FinancialDashboard summary={monthlyBillsSummary} />
 
       <Card>
         <CardHeader>

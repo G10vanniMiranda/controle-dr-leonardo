@@ -5,7 +5,6 @@ import {
 } from "@/lib/mock-data"
 import { type Condemnation, type CondemnationPayment } from "@/lib/domain"
 import { getDataProvider } from "@/lib/services/data-provider"
-import * as supabaseService from "@/lib/services/supabase/condemnations-service"
 
 export type CondemnationInput = Omit<Condemnation, "id" | "status">
 export type CondemnationUpdateInput = Partial<CondemnationInput> &
@@ -13,7 +12,9 @@ export type CondemnationUpdateInput = Partial<CondemnationInput> &
 
 export function getCondemnations() {
   if (getDataProvider() === "supabase") {
-    return supabaseService.getCondemnations()
+    throw new Error(
+      "Import getCondemnationsAsync from '@/lib/services/server/condemnations-service' in Server Components."
+    )
   }
 
   return condemnations
@@ -21,7 +22,9 @@ export function getCondemnations() {
 
 export function getCondemnationPaymentsForProvider(condemnationId: string) {
   if (getDataProvider() === "supabase") {
-    return supabaseService.getCondemnationPayments(condemnationId)
+    throw new Error(
+      "Import getCondemnationPaymentsAsync from '@/lib/services/server/condemnations-service' in Server Components."
+    )
   }
 
   return getCondemnationPayments(condemnationId)
@@ -29,7 +32,9 @@ export function getCondemnationPaymentsForProvider(condemnationId: string) {
 
 export function getCondemnationSummaryForProvider(condemnationId: string) {
   if (getDataProvider() === "supabase") {
-    return supabaseService.getCondemnationSummary(condemnationId)
+    throw new Error(
+      "Import getCondemnationSummaryAsync from '@/lib/services/server/condemnations-service' in Server Components."
+    )
   }
 
   return getCondemnationSummary(condemnationId)
@@ -42,7 +47,9 @@ export {
 
 export function createCondemnation(input: CondemnationInput): Condemnation {
   if (getDataProvider() === "supabase") {
-    return supabaseService.createCondemnation(input)
+    throw new Error(
+      "Import createCondemnationAsync from '@/lib/services/server/condemnations-service' in Server Components."
+    )
   }
 
   return {
@@ -54,7 +61,9 @@ export function createCondemnation(input: CondemnationInput): Condemnation {
 
 export function updateCondemnation(id: string, input: CondemnationUpdateInput) {
   if (getDataProvider() === "supabase") {
-    return supabaseService.updateCondemnation(id, input)
+    throw new Error(
+      "Import updateCondemnationAsync from '@/lib/services/server/condemnations-service' in Server Components."
+    )
   }
 
   const currentCondemnation = condemnations.find((item) => item.id === id)
@@ -66,7 +75,9 @@ export function registerCondemnationPayment(
   valueCents: number
 ): CondemnationPayment {
   if (getDataProvider() === "supabase") {
-    return supabaseService.registerCondemnationPayment(condemnation, valueCents)
+    throw new Error(
+      "Use a Server Action backed by '@/lib/services/server/condemnations-service' with NEXT_PUBLIC_DATA_PROVIDER=supabase."
+    )
   }
 
   return {

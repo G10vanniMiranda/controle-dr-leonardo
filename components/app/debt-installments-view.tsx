@@ -5,6 +5,7 @@ import { CheckCircle2, Clock3, FileCheck2, ReceiptText, Search } from "lucide-re
 
 import { brlFormatter, dateFormatter } from "@/lib/formatters"
 import {
+  type Client,
   type DebtInstallmentPayment,
   type DebtInstallmentPlan,
   debtInstallmentPaymentStatusLabels,
@@ -17,11 +18,6 @@ import {
   SortHeader,
   useListControls,
 } from "@/components/app/list-controls"
-import {
-  getDebtInstallmentPayments,
-  markDebtInstallmentPaymentAsPaid,
-} from "@/lib/services/debt-installments-service"
-import { getClientById } from "@/lib/services/clients-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -49,24 +45,32 @@ type DebtInstallmentSortKey =
   | "total"
 
 export function DebtInstallmentsView({
+  clients,
   debtInstallments,
+  initialPayments,
 }: {
+  clients: Client[]
   debtInstallments: DebtInstallmentPlan[]
+  initialPayments: DebtInstallmentPayment[]
 }) {
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [selectedId, setSelectedId] = useState(debtInstallments[0]?.id ?? "")
   const [plans, setPlans] = useState(debtInstallments)
   const [feedback, setFeedback] = useState("")
-  const [payments, setPayments] = useState<DebtInstallmentPayment[]>(() =>
-    debtInstallments.flatMap((plan) => getDebtInstallmentPayments(plan.id))
+  const [payments, setPayments] = useState<DebtInstallmentPayment[]>(
+    initialPayments
+  )
+  const clientsById = useMemo(
+    () => Object.fromEntries(clients.map((client) => [client.id, client])),
+    [clients]
   )
 
   const filteredPlans = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
 
     return plans.filter((plan) => {
-      const client = getClientById(plan.clientId)
+      const client = clientsById[plan.clientId]
       const matchesStatus = status === "todos" || plan.status === status
       const matchesQuery =
         !normalizedQuery ||
@@ -75,7 +79,7 @@ export function DebtInstallmentsView({
 
       return matchesStatus && matchesQuery
     })
-  }, [plans, query, status])
+  }, [clientsById, plans, query, status])
 
   const selectedPlan = plans.find((plan) => plan.id === selectedId) ?? plans[0]
   const selectedPayments = payments.filter(
@@ -98,7 +102,7 @@ export function DebtInstallmentsView({
     items: filteredPlans,
     pageSize: 6,
     sortAccessors: {
-      client: (plan) => getClientById(plan.clientId)?.fullName ?? "",
+      client: (plan) => clientsById[plan.clientId]?.fullName ?? "",
       description: (plan) => plan.description,
       installments: (plan) =>
         payments.filter(
@@ -129,7 +133,12 @@ export function DebtInstallmentsView({
 
       planToCheck = payment.debtInstallmentId
 
-      return markDebtInstallmentPaymentAsPaid(payment)
+      return {
+        ...payment,
+        paidAt: new Date().toISOString().slice(0, 10),
+        receiptName: `comprovante-${payment.id}.pdf`,
+        status: "paid" as const,
+      }
     })
 
     setPayments(nextPayments)
@@ -260,7 +269,7 @@ export function DebtInstallmentsView({
             </TableHeader>
             <TableBody>
               {pageItems.map((plan) => {
-                const client = getClientById(plan.clientId)
+                const client = clientsById[plan.clientId]
                 const planPayments = payments.filter(
                   (payment) => payment.debtInstallmentId === plan.id
                 )

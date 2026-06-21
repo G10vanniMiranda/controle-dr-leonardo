@@ -7,6 +7,7 @@ import { brlFormatter, dateFormatter } from "@/lib/formatters"
 import {
   type Condemnation,
   type CondemnationPayment,
+  type LegalCase,
   condemnationStatusLabels,
 } from "@/lib/domain"
 import { EmptyState } from "@/components/app/empty-state"
@@ -16,11 +17,6 @@ import {
   SortHeader,
   useListControls,
 } from "@/components/app/list-controls"
-import {
-  getCondemnationPayments,
-  registerCondemnationPayment,
-} from "@/lib/services/condemnations-service"
-import { getCaseById } from "@/lib/services/cases-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -41,9 +37,13 @@ import {
 } from "@/components/ui/table"
 
 export function CondemnationsView({
+  cases,
   condemnations,
+  initialPayments,
 }: {
+  cases: LegalCase[]
   condemnations: Condemnation[]
+  initialPayments: CondemnationPayment[]
 }) {
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
@@ -52,17 +52,18 @@ export function CondemnationsView({
     message: string
     tone?: "success" | "error"
   } | null>(null)
-  const [payments, setPayments] = useState<CondemnationPayment[]>(() =>
-    condemnations.flatMap((condemnation) =>
-      getCondemnationPayments(condemnation.id)
-    )
+  const [payments, setPayments] =
+    useState<CondemnationPayment[]>(initialPayments)
+  const casesById = useMemo(
+    () => Object.fromEntries(cases.map((legalCase) => [legalCase.id, legalCase])),
+    [cases]
   )
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
 
     return items.filter((condemnation) => {
-      const legalCase = getCaseById(condemnation.caseId)
+      const legalCase = casesById[condemnation.caseId]
       const matchesStatus = status === "todos" || condemnation.status === status
       const matchesQuery =
         !normalizedQuery ||
@@ -72,7 +73,7 @@ export function CondemnationsView({
 
       return matchesStatus && matchesQuery
     })
-  }, [items, query, status])
+  }, [casesById, items, query, status])
 
   const balanceByCondemnationId = useMemo(
     () =>
@@ -108,7 +109,7 @@ export function CondemnationsView({
       balance: (condemnation) => balanceByCondemnationId[condemnation.id] ?? 0,
       parties: (condemnation) => condemnation.debtorParty,
       process: (condemnation) =>
-        getCaseById(condemnation.caseId)?.caseNumber ?? "",
+        casesById[condemnation.caseId]?.caseNumber ?? "",
       status: (condemnation) => condemnationStatusLabels[condemnation.status],
     },
   })
@@ -150,7 +151,11 @@ export function CondemnationsView({
     setPayments((currentPayments) => [
       ...currentPayments,
       {
-        ...registerCondemnationPayment(condemnation, valueCents),
+        condemnationId: condemnation.id,
+        notes: "Pagamento simulado registrado na sessao.",
+        paidAt: new Date().toISOString().slice(0, 10),
+        paymentMethod: "PIX",
+        valueCents,
         id: `${condemnation.id}-pagamento-${currentPayments.length + 1}`,
       },
     ])
@@ -277,7 +282,7 @@ export function CondemnationsView({
             </TableHeader>
             <TableBody>
               {pageItems.map((condemnation) => {
-                const legalCase = getCaseById(condemnation.caseId)
+                const legalCase = casesById[condemnation.caseId]
                 const remainingCents = balanceByCondemnationId[condemnation.id] ?? 0
 
                 return (

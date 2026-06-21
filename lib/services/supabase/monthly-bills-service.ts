@@ -107,6 +107,7 @@ export async function getMonthlyBillsSummary(month: string) {
   const bills = await getMonthlyBillsByMonth(month)
 
   return {
+    bills,
     overdueCents: bills
       .filter((bill) => bill.status === "overdue")
       .reduce((total, bill) => total + bill.valueCents, 0),

@@ -1,13 +1,14 @@
 import { type DocumentRecord } from "@/lib/domain"
 import { documents } from "@/lib/mock-data"
 import { getDataProvider } from "@/lib/services/data-provider"
-import * as supabaseService from "@/lib/services/supabase/documents-service"
 
 export type DocumentInput = Omit<DocumentRecord, "createdAt" | "id" | "storagePath">
 
 export function getDocuments() {
   if (getDataProvider() === "supabase") {
-    return supabaseService.getDocuments()
+    throw new Error(
+      "Import getDocumentsAsync from '@/lib/services/server/documents-service' in Server Components."
+    )
   }
 
   return documents
@@ -15,7 +16,9 @@ export function getDocuments() {
 
 export function uploadDocument(input: DocumentInput): DocumentRecord {
   if (getDataProvider() === "supabase") {
-    return supabaseService.uploadDocument(input)
+    throw new Error(
+      "Import uploadDocumentAsync from '@/lib/services/server/documents-service' in Server Components."
+    )
   }
 
   return {

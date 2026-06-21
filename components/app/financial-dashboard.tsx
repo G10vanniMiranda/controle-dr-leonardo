@@ -1,7 +1,6 @@
 import { ReceiptText, TrendingDown, TrendingUp, WalletCards } from "lucide-react"
 
 import { brlFormatter } from "@/lib/formatters"
-import { getMonthlyBillsSummary } from "@/lib/services/monthly-bills-service"
 import {
   Card,
   CardContent,
@@ -10,8 +9,19 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export function FinancialDashboard() {
-  const summary = getMonthlyBillsSummary("2026-06")
+type MonthlyBillsSummary = {
+  bills: unknown[]
+  overdueCents: number
+  paidCents: number
+  pendingCents: number
+  totalCents: number
+}
+
+export function FinancialDashboard({
+  summary,
+}: {
+  summary: MonthlyBillsSummary
+}) {
   const projectedReceiptsCents = 5280000
   const balanceCents = projectedReceiptsCents - summary.totalCents
 
