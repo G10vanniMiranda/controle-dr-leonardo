@@ -92,6 +92,102 @@ export type MonthlyBill = {
   notes: string
 }
 
+export type CondemnationStatus = "open" | "installment" | "paid" | "execution"
+
+export type Condemnation = {
+  id: string
+  caseId: string
+  debtorParty: string
+  creditorParty: string
+  originalValueCents: number
+  updatedValueCents: number
+  interestCents: number
+  fineCents: number
+  decisionDate: string
+  status: CondemnationStatus
+  notes: string
+}
+
+export type CondemnationPayment = {
+  id: string
+  condemnationId: string
+  valueCents: number
+  paidAt: string
+  paymentMethod: string
+  notes: string
+}
+
+export type DebtInstallmentStatus = "active" | "paid" | "overdue" | "cancelled"
+
+export type DebtInstallmentPlan = {
+  id: string
+  clientId: string
+  caseId?: string
+  description: string
+  totalValueCents: number
+  entryValueCents: number
+  installmentsCount: number
+  installmentValueCents: number
+  dueDay: number
+  status: DebtInstallmentStatus
+  notes: string
+}
+
+export type DebtInstallmentPaymentStatus = "pending" | "paid" | "overdue"
+
+export type DebtInstallmentPayment = {
+  id: string
+  debtInstallmentId: string
+  installmentNumber: number
+  valueCents: number
+  dueDate: string
+  paidAt?: string
+  receiptName?: string
+  status: DebtInstallmentPaymentStatus
+}
+
+export type DocumentType =
+  | "contract"
+  | "power_of_attorney"
+  | "identity"
+  | "payment_receipt"
+  | "petition"
+  | "sentence"
+  | "agreement"
+  | "other"
+
+export type DocumentModule =
+  | "client"
+  | "case"
+  | "legal_fee"
+  | "condemnation"
+  | "debt_installment"
+
+export type DocumentRecord = {
+  id: string
+  userId: string
+  module: DocumentModule
+  type: DocumentType
+  linkedEntityLabel: string
+  clientId?: string
+  caseId?: string
+  fileName: string
+  storagePath: string
+  mimeType: string
+  sizeBytes: number
+  createdAt: string
+}
+
+export type ActivityLog = {
+  id: string
+  entityType: string
+  entityLabel: string
+  action: string
+  actor: string
+  createdAt: string
+  metadata: string
+}
+
 export const clients: Client[] = [
   {
     id: "marina-almeida",
@@ -401,6 +497,248 @@ export const monthlyBills: MonthlyBill[] = [
   },
 ]
 
+export const condemnations: Condemnation[] = [
+  {
+    id: "condenacao-rafael",
+    caseId: "execucao-rafael",
+    debtorParty: "Construtora Norte Ltda.",
+    creditorParty: "Rafael Costa",
+    originalValueCents: 3210000,
+    updatedValueCents: 3715000,
+    interestCents: 350000,
+    fineCents: 155000,
+    decisionDate: "2026-02-14",
+    status: "execution",
+    notes: "Execucao em andamento com pedido de bloqueio de ativos.",
+  },
+  {
+    id: "condenacao-marina",
+    caseId: "revisional-marina",
+    debtorParty: "Banco Alfa S.A.",
+    creditorParty: "Marina Almeida",
+    originalValueCents: 1840000,
+    updatedValueCents: 2015000,
+    interestCents: 125000,
+    fineCents: 50000,
+    decisionDate: "2026-04-02",
+    status: "open",
+    notes: "Aguardando prazo para pagamento voluntario.",
+  },
+  {
+    id: "condenacao-ls",
+    caseId: "cobranca-ls",
+    debtorParty: "Norte Distribuidora",
+    creditorParty: "LS Comercio Ltda.",
+    originalValueCents: 6150000,
+    updatedValueCents: 6425000,
+    interestCents: 210000,
+    fineCents: 65000,
+    decisionDate: "2026-05-20",
+    status: "installment",
+    notes: "Acordo parcelado em acompanhamento.",
+  },
+]
+
+export const condemnationPayments: CondemnationPayment[] = [
+  {
+    id: "pagamento-condenacao-ls-1",
+    condemnationId: "condenacao-ls",
+    valueCents: 1200000,
+    paidAt: "2026-06-05",
+    paymentMethod: "Transferencia",
+    notes: "Primeira parcela do acordo.",
+  },
+  {
+    id: "pagamento-condenacao-rafael-1",
+    condemnationId: "condenacao-rafael",
+    valueCents: 500000,
+    paidAt: "2026-05-29",
+    paymentMethod: "Deposito judicial",
+    notes: "Pagamento parcial registrado.",
+  },
+]
+
+export const debtInstallments: DebtInstallmentPlan[] = [
+  {
+    id: "parcelamento-ls-acordo",
+    clientId: "ls-comercio",
+    caseId: "cobranca-ls",
+    description: "Acordo de quitacao Norte Distribuidora",
+    totalValueCents: 6425000,
+    entryValueCents: 1200000,
+    installmentsCount: 8,
+    installmentValueCents: 653125,
+    dueDay: 10,
+    status: "active",
+    notes: "Parcelamento originado de condenacao em aberto.",
+  },
+  {
+    id: "parcelamento-rafael-divida",
+    clientId: "rafael-costa",
+    caseId: "execucao-rafael",
+    description: "Quitacao de saldo residual",
+    totalValueCents: 1550000,
+    entryValueCents: 250000,
+    installmentsCount: 5,
+    installmentValueCents: 260000,
+    dueDay: 20,
+    status: "overdue",
+    notes: "Duas parcelas vencidas.",
+  },
+]
+
+export const debtInstallmentPayments: DebtInstallmentPayment[] = [
+  {
+    id: "ls-acordo-entrada",
+    debtInstallmentId: "parcelamento-ls-acordo",
+    installmentNumber: 0,
+    valueCents: 1200000,
+    dueDate: "2026-06-05",
+    paidAt: "2026-06-05",
+    receiptName: "comprovante-entrada-ls.pdf",
+    status: "paid",
+  },
+  {
+    id: "ls-acordo-1",
+    debtInstallmentId: "parcelamento-ls-acordo",
+    installmentNumber: 1,
+    valueCents: 653125,
+    dueDate: "2026-07-10",
+    status: "pending",
+  },
+  {
+    id: "ls-acordo-2",
+    debtInstallmentId: "parcelamento-ls-acordo",
+    installmentNumber: 2,
+    valueCents: 653125,
+    dueDate: "2026-08-10",
+    status: "pending",
+  },
+  {
+    id: "rafael-divida-entrada",
+    debtInstallmentId: "parcelamento-rafael-divida",
+    installmentNumber: 0,
+    valueCents: 250000,
+    dueDate: "2026-02-01",
+    paidAt: "2026-02-01",
+    receiptName: "entrada-rafael.pdf",
+    status: "paid",
+  },
+  {
+    id: "rafael-divida-1",
+    debtInstallmentId: "parcelamento-rafael-divida",
+    installmentNumber: 1,
+    valueCents: 260000,
+    dueDate: "2026-03-20",
+    status: "overdue",
+  },
+  {
+    id: "rafael-divida-2",
+    debtInstallmentId: "parcelamento-rafael-divida",
+    installmentNumber: 2,
+    valueCents: 260000,
+    dueDate: "2026-04-20",
+    status: "overdue",
+  },
+]
+
+export const documents: DocumentRecord[] = [
+  {
+    id: "doc-contrato-marina",
+    userId: "mock-user",
+    module: "legal_fee",
+    type: "contract",
+    linkedEntityLabel: "Contrato revisional Marina Almeida",
+    clientId: "marina-almeida",
+    caseId: "revisional-marina",
+    fileName: "contrato-honorarios-marina.pdf",
+    storagePath: "mock/legal-fees/contrato-honorarios-marina.pdf",
+    mimeType: "application/pdf",
+    sizeBytes: 482000,
+    createdAt: "2026-01-25",
+  },
+  {
+    id: "doc-procuracao-rafael",
+    userId: "mock-user",
+    module: "client",
+    type: "power_of_attorney",
+    linkedEntityLabel: "Rafael Costa",
+    clientId: "rafael-costa",
+    fileName: "procuracao-rafael.pdf",
+    storagePath: "mock/clients/procuracao-rafael.pdf",
+    mimeType: "application/pdf",
+    sizeBytes: 356000,
+    createdAt: "2026-02-04",
+  },
+  {
+    id: "doc-sentenca-patricia",
+    userId: "mock-user",
+    module: "case",
+    type: "sentence",
+    linkedEntityLabel: "0003333-22.2025.8.04.0001",
+    clientId: "patricia-nunes",
+    caseId: "indenizacao-patricia",
+    fileName: "sentenca-patricia.pdf",
+    storagePath: "mock/cases/sentenca-patricia.pdf",
+    mimeType: "application/pdf",
+    sizeBytes: 721000,
+    createdAt: "2026-05-11",
+  },
+  {
+    id: "doc-comprovante-ls",
+    userId: "mock-user",
+    module: "debt_installment",
+    type: "payment_receipt",
+    linkedEntityLabel: "Acordo de quitacao Norte Distribuidora",
+    clientId: "ls-comercio",
+    caseId: "cobranca-ls",
+    fileName: "comprovante-entrada-ls.pdf",
+    storagePath: "mock/debt-installments/comprovante-entrada-ls.pdf",
+    mimeType: "application/pdf",
+    sizeBytes: 198000,
+    createdAt: "2026-06-05",
+  },
+]
+
+export const activityLogs: ActivityLog[] = [
+  {
+    id: "log-cliente-marina",
+    entityType: "client",
+    entityLabel: "Marina Almeida",
+    action: "Cliente criado",
+    actor: "Dr. Leonardo",
+    createdAt: "2026-01-12T10:20:00",
+    metadata: "Cadastro inicial no sistema mock.",
+  },
+  {
+    id: "log-processo-rafael",
+    entityType: "case",
+    entityLabel: "0009876-12.2025.8.04.0001",
+    action: "Processo atualizado",
+    actor: "Dr. Leonardo",
+    createdAt: "2026-05-29T15:45:00",
+    metadata: "Registro de pagamento parcial em condenacao.",
+  },
+  {
+    id: "log-parcela-ls",
+    entityType: "debt_installment",
+    entityLabel: "Acordo de quitacao Norte Distribuidora",
+    action: "Comprovante anexado",
+    actor: "Dr. Leonardo",
+    createdAt: "2026-06-05T09:10:00",
+    metadata: "Documento mock vinculado ao parcelamento.",
+  },
+  {
+    id: "log-conta-sistema",
+    entityType: "monthly_bill",
+    entityLabel: "Sistema juridico",
+    action: "Conta marcada como paga",
+    actor: "Dr. Leonardo",
+    createdAt: "2026-06-10T11:00:00",
+    metadata: "Pagamento mensal registrado.",
+  },
+]
+
 export const clientStatusLabels: Record<ClientStatus, string> = {
   active: "Ativo",
   inactive: "Inativo",
@@ -447,6 +785,48 @@ export const monthlyBillCategoryLabels: Record<MonthlyBillCategory, string> = {
   personal: "Pessoal",
   system: "Sistema",
   taxes: "Impostos",
+}
+
+export const condemnationStatusLabels: Record<CondemnationStatus, string> = {
+  execution: "Em execucao",
+  installment: "Parcelado",
+  open: "Em aberto",
+  paid: "Quitado",
+}
+
+export const debtInstallmentStatusLabels: Record<DebtInstallmentStatus, string> = {
+  active: "Ativo",
+  cancelled: "Cancelado",
+  overdue: "Vencido",
+  paid: "Quitado",
+}
+
+export const debtInstallmentPaymentStatusLabels: Record<
+  DebtInstallmentPaymentStatus,
+  string
+> = {
+  overdue: "Vencida",
+  paid: "Paga",
+  pending: "Pendente",
+}
+
+export const documentTypeLabels: Record<DocumentType, string> = {
+  agreement: "Acordo",
+  contract: "Contrato",
+  identity: "RG/CPF",
+  other: "Outros",
+  payment_receipt: "Comprovante de pagamento",
+  petition: "Peticao",
+  power_of_attorney: "Procuracao",
+  sentence: "Sentenca",
+}
+
+export const documentModuleLabels: Record<DocumentModule, string> = {
+  case: "Processo",
+  client: "Cliente",
+  condemnation: "Condenacao",
+  debt_installment: "Parcelamento",
+  legal_fee: "Honorarios",
 }
 
 export function getClients() {
@@ -587,4 +967,139 @@ export function getMonthlyBillsSummary(month: string) {
     pendingCents,
     totalCents,
   }
+}
+
+export function getCondemnations() {
+  return condemnations.map((condemnation) => ({
+    ...condemnation,
+    case: getCaseById(condemnation.caseId),
+    payments: getCondemnationPayments(condemnation.id),
+  }))
+}
+
+export function getCondemnationPayments(condemnationId: string) {
+  return condemnationPayments.filter(
+    (payment) => payment.condemnationId === condemnationId
+  )
+}
+
+export function getCondemnationSummary(condemnationId: string) {
+  const condemnation = condemnations.find((item) => item.id === condemnationId)
+  const paidCents = getCondemnationPayments(condemnationId).reduce(
+    (total, payment) => total + payment.valueCents,
+    0
+  )
+  const updatedValueCents = condemnation?.updatedValueCents ?? 0
+
+  return {
+    paidCents,
+    remainingCents: Math.max(updatedValueCents - paidCents, 0),
+    updatedValueCents,
+  }
+}
+
+export function getDebtInstallments() {
+  return debtInstallments.map((installment) => ({
+    ...installment,
+    case: installment.caseId ? getCaseById(installment.caseId) : undefined,
+    client: getClientById(installment.clientId),
+    payments: getDebtInstallmentPayments(installment.id),
+  }))
+}
+
+export function getDebtInstallmentPayments(debtInstallmentId: string) {
+  return debtInstallmentPayments.filter(
+    (payment) => payment.debtInstallmentId === debtInstallmentId
+  )
+}
+
+export function getDebtInstallmentSummary(debtInstallmentId: string) {
+  const payments = getDebtInstallmentPayments(debtInstallmentId)
+  const paidCents = payments
+    .filter((payment) => payment.status === "paid")
+    .reduce((total, payment) => total + payment.valueCents, 0)
+  const overdueCents = payments
+    .filter((payment) => payment.status === "overdue")
+    .reduce((total, payment) => total + payment.valueCents, 0)
+  const pendingCents = payments
+    .filter((payment) => payment.status !== "paid")
+    .reduce((total, payment) => total + payment.valueCents, 0)
+
+  return {
+    overdueCents,
+    paidCents,
+    paidCount: payments.filter((payment) => payment.status === "paid").length,
+    pendingCents,
+    totalCount: payments.length,
+  }
+}
+
+export function getDocuments() {
+  return documents
+}
+
+export function getActivityLogs() {
+  return activityLogs
+}
+
+export function getReports() {
+  const monthlyBillSummary = getMonthlyBillsSummary("2026-06")
+  const legalFeesReceivedCents = feeInstallments
+    .filter((installment) => installment.status === "paid")
+    .reduce((total, installment) => total + installment.valueCents, 0)
+  const overdueFeesCents = feeInstallments
+    .filter((installment) => installment.status === "overdue")
+    .reduce((total, installment) => total + installment.valueCents, 0)
+  const activeCasesCount = legalCases.filter(
+    (legalCase) =>
+      legalCase.status !== "archived" && legalCase.status !== "closed"
+  ).length
+  const openCondemnationsCents = condemnations
+    .filter((condemnation) => condemnation.status !== "paid")
+    .reduce((total, condemnation) => total + condemnation.updatedValueCents, 0)
+
+  return [
+    {
+      id: "recebimentos-mensais",
+      title: "Recebimentos mensais",
+      description: "Honorarios, pagamentos de condenacoes e parcelamentos.",
+      status: "Disponivel",
+      valueCents: legalFeesReceivedCents,
+    },
+    {
+      id: "despesas-mensais",
+      title: "Despesas mensais",
+      description: "Contas pagas, pendentes e vencidas do periodo.",
+      status: "Disponivel",
+      valueCents: monthlyBillSummary.totalCents,
+    },
+    {
+      id: "honorarios-pendentes",
+      title: "Honorarios pendentes",
+      description: "Parcelas de honorarios em aberto ou vencidas.",
+      status: "Atencao",
+      valueCents: overdueFeesCents,
+    },
+    {
+      id: "processos-ativos",
+      title: "Processos ativos",
+      description: "Processos nao arquivados e nao encerrados.",
+      status: "Disponivel",
+      valueText: String(activeCasesCount),
+    },
+    {
+      id: "condenacoes-abertas",
+      title: "Condenacoes em aberto",
+      description: "Valores atualizados ainda nao quitados.",
+      status: "Atencao",
+      valueCents: openCondemnationsCents,
+    },
+    {
+      id: "saldo-financeiro",
+      title: "Saldo financeiro mensal",
+      description: "Recebimentos menos despesas previstas.",
+      status: "Disponivel",
+      valueCents: legalFeesReceivedCents - monthlyBillSummary.totalCents,
+    },
+  ]
 }

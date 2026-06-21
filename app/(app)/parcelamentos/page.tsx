@@ -1,19 +1,6 @@
-import { ModulePage } from "@/components/app/module-page"
+import { DebtInstallmentsView } from "@/components/app/debt-installments-view"
+import { debtInstallments } from "@/lib/mock-data"
 
 export default function ParcelamentosPage() {
-  return (
-    <ModulePage
-      title="Parcelamentos"
-      description="Quitacao de dividas, parcelas geradas e comprovantes."
-      filters={["Cliente", "Status", "Vencimento"]}
-      rows={[
-        {
-          title: "Quitacao acordo extrajudicial",
-          subtitle: "10 parcelas | 2 vencidas",
-          status: "Ativo",
-          amount: "R$ 15.500,00",
-        },
-      ]}
-    />
-  )
+  return <DebtInstallmentsView debtInstallments={debtInstallments} />
 }
