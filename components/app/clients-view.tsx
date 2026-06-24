@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   Eye,
   Pencil,
@@ -61,14 +62,18 @@ const clientSortAccessors: Record<ClientSortKey, (client: Client) => string | nu
 export function ClientsView({
   caseCountsByClientId = {},
   clients,
+  deleteClientAction,
 }: {
   caseCountsByClientId?: Record<string, number>
   clients: Client[]
+  deleteClientAction: (clientId: string) => Promise<{ error?: string; ok: boolean }>
 }) {
+  const router = useRouter()
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [visibleClients, setVisibleClients] = useState(clients)
   const [feedback, setFeedback] = useState("")
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const filteredClients = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -107,11 +112,21 @@ export function ClientsView({
     },
   })
 
-  function removeClient(id: string) {
+  async function removeClient(id: string) {
+    setDeletingId(id)
+    const result = await deleteClientAction(id)
+    setDeletingId(null)
+
+    if (!result.ok) {
+      setFeedback(result.error ?? "Nao foi possivel excluir o cliente.")
+      return
+    }
+
     setVisibleClients((currentClients) =>
       currentClients.filter((client) => client.id !== id)
     )
-    setFeedback("Cliente removido desta visualizacao.")
+    setFeedback("Cliente excluido com sucesso.")
+    router.refresh()
   }
 
   return (
@@ -265,9 +280,8 @@ export function ClientsView({
                             <DialogHeader>
                               <DialogTitle>Excluir cliente?</DialogTitle>
                               <DialogDescription>
-                                Esta acao remove o item apenas desta visualizacao
-                                por enquanto. A exclusao persistente sera ligada
-                                ao fluxo Supabase com log de atividade.
+                                Esta acao remove o cliente e os registros
+                                dependentes conforme as regras do banco.
                               </DialogDescription>
                             </DialogHeader>
                             <div className="flex justify-end gap-2">
@@ -277,9 +291,10 @@ export function ClientsView({
                               <DialogClose asChild>
                                 <Button
                                   variant="destructive"
+                                  disabled={deletingId === client.id}
                                   onClick={() => removeClient(client.id)}
                                 >
-                                  Excluir
+                                  {deletingId === client.id ? "Excluindo..." : "Excluir"}
                                 </Button>
                               </DialogClose>
                             </div>

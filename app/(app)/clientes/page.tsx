@@ -4,6 +4,8 @@ import {
   getClientsAsync,
 } from "@/lib/services/server/clients-service"
 
+import { deleteClientAction } from "./actions"
+
 export default async function ClientesPage() {
   const clients = await getClientsAsync()
   const caseCounts = await Promise.all(
@@ -17,6 +19,7 @@ export default async function ClientesPage() {
     <ClientsView
       caseCountsByClientId={Object.fromEntries(caseCounts)}
       clients={clients}
+      deleteClientAction={deleteClientAction}
     />
   )
 }

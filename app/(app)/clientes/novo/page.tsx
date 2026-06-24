@@ -4,6 +4,8 @@ import { ClientForm } from "@/components/app/client-form"
 import { PageHeading } from "@/components/app/page-heading"
 import { getClientByIdAsync } from "@/lib/services/server/clients-service"
 
+import { saveClientAction } from "../actions"
+
 export default async function NovoClientePage({
   searchParams,
 }: {
@@ -25,10 +27,10 @@ export default async function NovoClientePage({
         description={
           client
             ? "Atualize os dados principais do cliente."
-            : "Cadastre os dados principais do cliente. Por enquanto, o salvamento e apenas simulado no frontend."
+            : "Cadastre os dados principais do cliente."
         }
       />
-      <ClientForm client={client} />
+      <ClientForm client={client} saveClientAction={saveClientAction} />
     </div>
   )
 }

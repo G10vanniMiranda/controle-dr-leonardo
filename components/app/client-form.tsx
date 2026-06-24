@@ -2,11 +2,13 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { type Client } from "@/lib/domain"
+import type { ClientInput } from "@/lib/services/clients-service"
 import { formatCpfCnpj, formatPhone, onlyDigits } from "@/lib/input-masks"
 import { FormFeedback } from "@/components/app/form-feedback"
 import { Button } from "@/components/ui/button"
@@ -37,10 +39,22 @@ const clientSchema = z.object({
 })
 
 type ClientFormValues = z.infer<typeof clientSchema>
+type ClientFormResult = { error?: string; ok: boolean }
 
-export function ClientForm({ client }: { client?: Client }) {
+export function ClientForm({
+  client,
+  saveClientAction,
+}: {
+  client?: Client
+  saveClientAction: (
+    input: ClientInput,
+    clientId?: string
+  ) => Promise<ClientFormResult>
+}) {
+  const router = useRouter()
   const mode = client ? "edit" : "create"
-  const [saved, setSaved] = useState(false)
+  const [feedback, setFeedback] = useState("")
+  const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
@@ -55,10 +69,36 @@ export function ClientForm({ client }: { client?: Client }) {
     },
   })
 
-  function onSubmit() {
+  async function onSubmit(values: ClientFormValues) {
+    setError("")
+    setFeedback("")
     setSaving(true)
-    setSaved(true)
-    window.setTimeout(() => setSaving(false), 450)
+
+    const result = await saveClientAction(
+      {
+        address: values.address,
+        documentNumber: values.documentNumber,
+        email: values.email,
+        fullName: values.fullName,
+        notes: values.notes ?? "",
+        phone: values.phone,
+        status: values.status,
+      },
+      client?.id
+    )
+
+    setSaving(false)
+
+    if (!result.ok) {
+      setError(result.error ?? "Nao foi possivel salvar o cliente.")
+      return
+    }
+
+    setFeedback(
+      mode === "edit" ? "Cliente atualizado com sucesso." : "Cliente cadastrado com sucesso."
+    )
+    router.push("/clientes")
+    router.refresh()
   }
 
   return (
@@ -69,8 +109,8 @@ export function ClientForm({ client }: { client?: Client }) {
         </CardTitle>
         <CardDescription>
           {mode === "edit"
-            ? "Alteracoes simuladas no mock, mantendo a validacao prevista para o Supabase."
-            : "Formulario mockado com a mesma validacao que sera usada no Supabase."}
+            ? "Atualize os dados que identificam e qualificam o cliente."
+            : "Preencha os dados principais para cadastrar o cliente."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -129,12 +169,11 @@ export function ClientForm({ client }: { client?: Client }) {
             />
           </Field>
 
-          {saved ? (
-            <FormFeedback>
-              {mode === "edit"
-                ? "Cliente atualizado no mock. A persistencia real sera ligada ao banco no final."
-                : "Cliente salvo no mock. A persistencia real sera ligada ao banco no final."}
-            </FormFeedback>
+          {feedback ? <FormFeedback>{feedback}</FormFeedback> : null}
+          {error ? (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/15 px-3 py-2 text-sm text-[#ffb4b4]">
+              {error}
+            </div>
           ) : null}
 
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">

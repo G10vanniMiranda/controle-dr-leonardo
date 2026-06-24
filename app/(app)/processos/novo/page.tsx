@@ -5,6 +5,8 @@ import { PageHeading } from "@/components/app/page-heading"
 import { getCaseByIdAsync } from "@/lib/services/server/cases-service"
 import { getClientsAsync } from "@/lib/services/server/clients-service"
 
+import { saveCaseAction } from "../actions"
+
 export default async function NovoProcessoPage({
   searchParams,
 }: {
@@ -29,10 +31,14 @@ export default async function NovoProcessoPage({
         description={
           legalCase
             ? "Atualize os dados do processo."
-            : "Crie um processo vinculado a um cliente ja cadastrado. A persistencia sera ligada ao banco ao final."
+            : "Crie um processo vinculado a um cliente ja cadastrado."
         }
       />
-      <CaseForm clients={clients} legalCase={legalCase} />
+      <CaseForm
+        clients={clients}
+        legalCase={legalCase}
+        saveCaseAction={saveCaseAction}
+      />
     </div>
   )
 }

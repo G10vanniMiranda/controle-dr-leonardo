@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   Eye,
   Pencil,
@@ -56,14 +57,18 @@ type CaseSortKey = "caseNumber" | "claimValue" | "client" | "status"
 export function CasesView({
   cases,
   clients,
+  deleteCaseAction,
 }: {
   cases: LegalCase[]
   clients: Client[]
+  deleteCaseAction: (caseId: string) => Promise<{ error?: string; ok: boolean }>
 }) {
+  const router = useRouter()
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [visibleCases, setVisibleCases] = useState(cases)
   const [feedback, setFeedback] = useState("")
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const clientsById = useMemo(
     () => new Map(clients.map((client) => [client.id, client])),
     [clients]
@@ -111,11 +116,21 @@ export function CasesView({
     },
   })
 
-  function removeCase(id: string) {
+  async function removeCase(id: string) {
+    setDeletingId(id)
+    const result = await deleteCaseAction(id)
+    setDeletingId(null)
+
+    if (!result.ok) {
+      setFeedback(result.error ?? "Nao foi possivel excluir o processo.")
+      return
+    }
+
     setVisibleCases((currentCases) =>
       currentCases.filter((legalCase) => legalCase.id !== id)
     )
-    setFeedback("Processo removido desta visualizacao.")
+    setFeedback("Processo excluido com sucesso.")
+    router.refresh()
   }
 
   return (
@@ -281,9 +296,8 @@ export function CasesView({
                             <DialogHeader>
                               <DialogTitle>Excluir processo?</DialogTitle>
                               <DialogDescription>
-                                Esta remocao acontece apenas nesta visualizacao
-                                por enquanto. A exclusao persistente sera ligada
-                                ao fluxo Supabase com log de atividade.
+                                Esta acao remove o processo e os registros
+                                dependentes conforme as regras do banco.
                               </DialogDescription>
                             </DialogHeader>
                             <div className="flex justify-end gap-2">
@@ -293,9 +307,12 @@ export function CasesView({
                               <DialogClose asChild>
                                 <Button
                                   variant="destructive"
+                                  disabled={deletingId === legalCase.id}
                                   onClick={() => removeCase(legalCase.id)}
                                 >
-                                  Excluir
+                                  {deletingId === legalCase.id
+                                    ? "Excluindo..."
+                                    : "Excluir"}
                                 </Button>
                               </DialogClose>
                             </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -11,7 +12,13 @@ import {
   formatMoneyInput,
   parseMoneyToNumber,
 } from "@/lib/input-masks"
-import { type Client, type LegalCase, caseStatusLabels } from "@/lib/domain"
+import {
+  type CaseStatus,
+  type Client,
+  type LegalCase,
+  caseStatusLabels,
+} from "@/lib/domain"
+import type { CaseInput } from "@/lib/services/cases-service"
 import { FormFeedback } from "@/components/app/form-feedback"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,7 +40,16 @@ const caseSchema = z.object({
   opposingParty: z.string().min(3, "Informe a parte contraria."),
   proceduralPhase: z.string().min(3, "Informe a fase processual."),
   state: z.string().min(2, "Informe o estado."),
-  status: z.string().min(1),
+  status: z.enum([
+    "agreement",
+    "archived",
+    "closed",
+    "execution",
+    "in_progress",
+    "in_review",
+    "sentence",
+    "waiting_hearing",
+  ]),
   claimValue: z
     .string()
     .refine((value) => parseMoneyToNumber(value) > 0, "Informe o valor da causa."),
@@ -42,16 +58,21 @@ const caseSchema = z.object({
 })
 
 type CaseFormValues = z.infer<typeof caseSchema>
+type CaseFormResult = { error?: string; ok: boolean }
 
 export function CaseForm({
   clients,
   legalCase,
+  saveCaseAction,
 }: {
   clients: Client[]
   legalCase?: LegalCase
+  saveCaseAction: (input: CaseInput, caseId?: string) => Promise<CaseFormResult>
 }) {
+  const router = useRouter()
   const mode = legalCase ? "edit" : "create"
-  const [saved, setSaved] = useState(false)
+  const [feedback, setFeedback] = useState("")
+  const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
   const form = useForm<CaseFormValues>({
     resolver: zodResolver(caseSchema),
@@ -73,10 +94,43 @@ export function CaseForm({
     },
   })
 
-  function onSubmit() {
+  async function onSubmit(values: CaseFormValues) {
+    setError("")
+    setFeedback("")
     setSaving(true)
-    setSaved(true)
-    window.setTimeout(() => setSaving(false), 450)
+
+    const result = await saveCaseAction(
+      {
+        actionType: values.actionType,
+        caseNumber: values.caseNumber,
+        claimValueCents: Math.round(parseMoneyToNumber(values.claimValue) * 100),
+        clientId: values.clientId,
+        court: values.court,
+        district: values.district,
+        notes: values.notes ?? "",
+        opposingParty: values.opposingParty,
+        proceduralPhase: values.proceduralPhase,
+        startDate: values.startDate,
+        state: values.state,
+        status: values.status as CaseStatus,
+      },
+      legalCase?.id
+    )
+
+    setSaving(false)
+
+    if (!result.ok) {
+      setError(result.error ?? "Nao foi possivel salvar o processo.")
+      return
+    }
+
+    setFeedback(
+      mode === "edit"
+        ? "Processo atualizado com sucesso."
+        : "Processo cadastrado com sucesso."
+    )
+    router.push("/processos")
+    router.refresh()
   }
 
   return (
@@ -87,7 +141,7 @@ export function CaseForm({
         </CardTitle>
         <CardDescription>
           {mode === "edit"
-            ? "Alteracoes simuladas no mock, mantendo o processo vinculado a um cliente."
+            ? "Atualize os dados do processo mantendo o vinculo com o cliente."
             : "Todo processo ja nasce vinculado a um cliente, conforme a regra de negocio."}
         </CardDescription>
       </CardHeader>
@@ -174,12 +228,11 @@ export function CaseForm({
             />
           </Field>
 
-          {saved ? (
-            <FormFeedback>
-              {mode === "edit"
-                ? "Processo atualizado no mock. Depois, este fluxo gravara em Supabase."
-                : "Processo salvo no mock. Depois, este fluxo gravara em Supabase."}
-            </FormFeedback>
+          {feedback ? <FormFeedback>{feedback}</FormFeedback> : null}
+          {error ? (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/15 px-3 py-2 text-sm text-[#ffb4b4]">
+              {error}
+            </div>
           ) : null}
 
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
