@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   CalendarDays,
   CheckCircle2,
@@ -55,7 +56,16 @@ const monthlyBillSortAccessors: Record<
   value: (bill) => bill.valueCents,
 }
 
-export function MonthlyBillsView({ bills }: { bills: MonthlyBill[] }) {
+export function MonthlyBillsView({
+  bills,
+  markMonthlyBillAsPaidAction,
+}: {
+  bills: MonthlyBill[]
+  markMonthlyBillAsPaidAction: (
+    id: string
+  ) => Promise<{ error?: string; ok: boolean }>
+}) {
+  const router = useRouter()
   const [query, setQuery] = useState("")
   const [month, setMonth] = useState("2026-06")
   const [category, setCategory] = useState("todas")
@@ -112,8 +122,13 @@ export function MonthlyBillsView({ bills }: { bills: MonthlyBill[] }) {
     .filter((bill) => bill.status === "overdue")
     .reduce((total, bill) => total + bill.valueCents, 0)
 
-  function markAsPaid(id: string) {
-    const paidBill = visibleBills.find((bill) => bill.id === id)
+  async function markAsPaid(id: string) {
+    const result = await markMonthlyBillAsPaidAction(id)
+
+    if (!result.ok) {
+      setFeedback(result.error ?? "Nao foi possivel marcar a conta como paga.")
+      return
+    }
 
     setVisibleBills((currentBills) =>
       currentBills.map((bill) =>
@@ -126,11 +141,8 @@ export function MonthlyBillsView({ bills }: { bills: MonthlyBill[] }) {
           : bill
       )
     )
-    setFeedback(
-      paidBill
-        ? "Conta marcada como paga nesta visualizacao."
-        : "Conta nao encontrada nesta visualizacao."
-    )
+    setFeedback("Conta marcada como paga.")
+    router.refresh()
   }
 
   return (

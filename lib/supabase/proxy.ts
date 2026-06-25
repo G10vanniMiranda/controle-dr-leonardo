@@ -51,17 +51,17 @@ export async function updateSession(request: NextRequest) {
     },
   })
 
-  const { data } = await supabase.auth.getClaims()
+  const { data } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
 
-  if (!data?.claims && isPrivateRoute(pathname)) {
+  if (!data?.user && isPrivateRoute(pathname)) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = "/login"
     redirectUrl.searchParams.set("redirectTo", pathname)
     return NextResponse.redirect(redirectUrl)
   }
 
-  if (data?.claims && pathname === "/login") {
+  if (data?.user && pathname === "/login") {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 

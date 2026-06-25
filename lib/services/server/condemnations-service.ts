@@ -5,6 +5,7 @@ import {
   getCondemnationPayments,
   getCondemnationSummary,
 } from "@/lib/mock-data"
+import type { Condemnation } from "@/lib/domain"
 import { getDataProvider } from "@/lib/services/data-provider"
 import type {
   CondemnationInput,
@@ -67,4 +68,22 @@ export async function updateCondemnationAsync(
   return currentCondemnation
     ? { ...currentCondemnation, ...input }
     : undefined
+}
+
+export async function registerCondemnationPaymentAsync(
+  condemnation: Condemnation,
+  valueCents: number
+) {
+  if (getDataProvider() === "supabase") {
+    return supabaseService.registerCondemnationPayment(condemnation, valueCents)
+  }
+
+  return {
+    condemnationId: condemnation.id,
+    id: `${condemnation.id}-pagamento-novo`,
+    notes: "Pagamento registrado pelo sistema.",
+    paidAt: new Date().toISOString().slice(0, 10),
+    paymentMethod: "PIX",
+    valueCents,
+  }
 }

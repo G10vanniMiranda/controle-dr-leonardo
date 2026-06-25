@@ -108,8 +108,8 @@ export function SortHeader<TSortKey extends string>({
       type="button"
       className={
         align === "right"
-          ? "ml-auto inline-flex items-center gap-2 text-right transition-colors hover:text-foreground"
-          : "inline-flex items-center gap-2 transition-colors hover:text-foreground"
+          ? "ml-auto inline-flex cursor-pointer items-center gap-2 text-right transition-colors hover:text-foreground"
+          : "inline-flex cursor-pointer items-center gap-2 transition-colors hover:text-foreground"
       }
       onClick={() => onSort(field)}
     >

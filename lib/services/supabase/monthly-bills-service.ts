@@ -68,6 +68,15 @@ async function getCurrentUserId() {
 const monthlyBillColumns =
   "id, description, category, value_cents, due_date, paid_at, status, recurring, notes"
 
+function isMissingMonthlyBillsTableError(error: { code?: string; message: string }) {
+  return (
+    error.message.includes("Could not find the table 'public.monthly_bills'") ||
+    error.message.includes('Could not find the table "public.monthly_bills"') ||
+    error.message.includes("relation \"public.monthly_bills\" does not exist") ||
+    error.code === "42P01"
+  )
+}
+
 export async function getMonthlyBills(): Promise<MonthlyBill[]> {
   const { supabase } = await getCurrentUserId()
   const { data, error } = await supabase
@@ -76,6 +85,10 @@ export async function getMonthlyBills(): Promise<MonthlyBill[]> {
     .order("due_date", { ascending: false })
 
   if (error) {
+    if (isMissingMonthlyBillsTableError(error)) {
+      return []
+    }
+
     throw new Error(`Erro ao carregar contas mensais: ${error.message}`)
   }
 
@@ -97,6 +110,10 @@ export async function getMonthlyBillsByMonth(month: string): Promise<MonthlyBill
     .order("due_date", { ascending: true })
 
   if (error) {
+    if (isMissingMonthlyBillsTableError(error)) {
+      return []
+    }
+
     throw new Error(`Erro ao carregar contas do mes: ${error.message}`)
   }
 

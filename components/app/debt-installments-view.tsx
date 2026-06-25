@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { CheckCircle2, Clock3, FileCheck2, ReceiptText, Search } from "lucide-react"
 
 import { brlFormatter, dateFormatter } from "@/lib/formatters"
@@ -48,11 +49,16 @@ export function DebtInstallmentsView({
   clients,
   debtInstallments,
   initialPayments,
+  markDebtInstallmentPaymentAsPaidAction,
 }: {
   clients: Client[]
   debtInstallments: DebtInstallmentPlan[]
   initialPayments: DebtInstallmentPayment[]
+  markDebtInstallmentPaymentAsPaidAction: (
+    payment: DebtInstallmentPayment
+  ) => Promise<{ error?: string; ok: boolean }>
 }) {
+  const router = useRouter()
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [selectedId, setSelectedId] = useState(debtInstallments[0]?.id ?? "")
@@ -123,8 +129,21 @@ export function DebtInstallmentsView({
     .filter((payment) => payment.status !== "paid")
     .reduce((total, payment) => total + payment.valueCents, 0)
 
-  function markPaymentAsPaid(id: string) {
+  async function markPaymentAsPaid(id: string) {
     let planToCheck = ""
+    const paymentToUpdate = payments.find((payment) => payment.id === id)
+
+    if (!paymentToUpdate) {
+      setFeedback("Parcela nao encontrada.")
+      return
+    }
+
+    const result = await markDebtInstallmentPaymentAsPaidAction(paymentToUpdate)
+
+    if (!result.ok) {
+      setFeedback(result.error ?? "Nao foi possivel marcar a parcela como paga.")
+      return
+    }
 
     const nextPayments = payments.map((payment) => {
       if (payment.id !== id) {
@@ -157,7 +176,8 @@ export function DebtInstallmentsView({
       return
     }
 
-    setFeedback("Parcela marcada como paga no mock da sessao.")
+    setFeedback("Parcela marcada como paga.")
+    router.refresh()
   }
 
   return (
@@ -171,7 +191,7 @@ export function DebtInstallmentsView({
             Parcelamentos
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Quitacao de dividas, parcelas, comprovantes e saldo devedor em modo mock.
+            Quitacao de dividas, parcelas, comprovantes e saldo devedor.
           </p>
         </div>
       </div>
@@ -284,7 +304,7 @@ export function DebtInstallmentsView({
                   >
                     <TableCell>
                       <button
-                        className="text-left font-medium text-foreground transition-colors hover:text-primary"
+                        className="cursor-pointer text-left font-medium text-foreground transition-colors hover:text-primary"
                         type="button"
                         onClick={() => setSelectedId(plan.id)}
                       >

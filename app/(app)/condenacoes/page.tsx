@@ -5,6 +5,11 @@ import {
   getCondemnationsAsync,
 } from "@/lib/services/server/condemnations-service"
 
+import {
+  registerCondemnationPaymentAction,
+  updateCondemnationStatusAction,
+} from "./actions"
+
 export default async function CondenacoesPage() {
   const [cases, condemnations, payments] = await Promise.all([
     getCasesAsync(),
@@ -17,6 +22,8 @@ export default async function CondenacoesPage() {
       cases={cases}
       condemnations={condemnations}
       initialPayments={payments}
+      registerCondemnationPaymentAction={registerCondemnationPaymentAction}
+      updateCondemnationStatusAction={updateCondemnationStatusAction}
     />
   )
 }

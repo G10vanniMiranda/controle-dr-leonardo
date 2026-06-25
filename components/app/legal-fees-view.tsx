@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   Banknote,
   CheckCircle2,
@@ -68,13 +69,18 @@ export function LegalFeesView({
   clients,
   installments: initialInstallments,
   legalFees,
+  markFeeInstallmentAsPaidAction,
   summariesByLegalFeeId,
 }: {
   clients: Client[]
   installments: FeeInstallment[]
   legalFees: LegalFee[]
+  markFeeInstallmentAsPaidAction: (
+    id: string
+  ) => Promise<{ error?: string; ok: boolean }>
   summariesByLegalFeeId: Record<string, LegalFeeSummary>
 }) {
+  const router = useRouter()
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [selectedFeeId, setSelectedFeeId] = useState(legalFees[0]?.id ?? "")
@@ -139,7 +145,14 @@ export function LegalFeesView({
     .filter((installment) => installment.status !== "paid")
     .reduce((total, installment) => total + installment.valueCents, 0)
 
-  function markAsPaid(id: string) {
+  async function markAsPaid(id: string) {
+    const result = await markFeeInstallmentAsPaidAction(id)
+
+    if (!result.ok) {
+      setFeedback(result.error ?? "Nao foi possivel marcar a parcela como paga.")
+      return
+    }
+
     setInstallments((currentInstallments) =>
       currentInstallments.map((installment) =>
         installment.id === id
@@ -152,7 +165,8 @@ export function LegalFeesView({
           : installment
       )
     )
-    setFeedback("Parcela marcada como paga nesta visualizacao.")
+    setFeedback("Parcela marcada como paga.")
+    router.refresh()
   }
 
   return (
@@ -292,7 +306,7 @@ export function LegalFeesView({
                   >
                     <TableCell>
                       <button
-                        className="text-left font-medium text-foreground transition-colors hover:text-primary"
+                        className="cursor-pointer text-left font-medium text-foreground transition-colors hover:text-primary"
                         type="button"
                         onClick={() => setSelectedFeeId(legalFee.id)}
                       >
@@ -348,7 +362,7 @@ export function LegalFeesView({
           <CardHeader>
             <CardTitle>Parcelas do contrato</CardTitle>
             <CardDescription>
-              Controle visual de pagamento para {selectedFee.contractName}.
+              Controle de pagamento para {selectedFee.contractName}.
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -14,11 +14,6 @@ import {
 } from "recharts"
 
 import {
-  caseStatus,
-  categoryReceipts,
-  monthlyFlow,
-} from "@/lib/dashboard-data"
-import {
   Card,
   CardContent,
   CardDescription,
@@ -37,6 +32,16 @@ const tooltipStyle = {
 }
 
 const axisTick = { fill: "#9e9e9e", fontSize: 12 }
+const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  currency: "BRL",
+  style: "currency",
+})
+
+export type DashboardChartsData = {
+  caseStatus: { name: string; total: number }[]
+  categoryReceipts: { name: string; value: number }[]
+  monthlyFlow: { entradas: number; month: string; saidas: number }[]
+}
 
 function ChartFrame({
   children,
@@ -80,7 +85,9 @@ function ChartFrame({
   )
 }
 
-export function DashboardChartsClient() {
+export function DashboardChartsClient({ data }: { data: DashboardChartsData }) {
+  const { caseStatus, categoryReceipts, monthlyFlow } = data
+
   return (
     <div className="grid gap-4 xl:grid-cols-3">
       <Card className="min-w-0 xl:col-span-2">
@@ -142,7 +149,12 @@ export function DashboardChartsClient() {
                     />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} formatter={(value) => `${value}%`} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  formatter={(value) =>
+                    currencyFormatter.format(Number(value) / 100)
+                  }
+                />
               </PieChart>
             )}
           </ChartFrame>
@@ -156,7 +168,9 @@ export function DashboardChartsClient() {
                   />
                   {item.name}
                 </span>
-                <span className="font-medium">{item.value}%</span>
+                <span className="font-medium">
+                  {currencyFormatter.format(item.value / 100)}
+                </span>
               </div>
             ))}
           </div>

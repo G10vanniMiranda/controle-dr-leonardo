@@ -1,4 +1,14 @@
 import { ArrowUpRight } from "lucide-react"
+import {
+  AlertTriangle,
+  Banknote,
+  BriefcaseBusiness,
+  CircleDollarSign,
+  Clock3,
+  FileClock,
+  HandCoins,
+  ReceiptText,
+} from "lucide-react"
 
 import { DashboardCharts } from "@/components/app/dashboard-charts"
 import { FinancialDashboard } from "@/components/app/financial-dashboard"
@@ -18,11 +28,156 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { dashboardMetrics, recentMatters } from "@/lib/dashboard-data"
+import { brlFormatter } from "@/lib/formatters"
+import { caseStatusLabels } from "@/lib/domain"
+import { getCasesAsync } from "@/lib/services/server/cases-service"
+import {
+  getAllCondemnationPaymentsAsync,
+  getCondemnationsAsync,
+} from "@/lib/services/server/condemnations-service"
+import {
+  getAllDebtInstallmentPaymentsAsync,
+  getDebtInstallmentsAsync,
+} from "@/lib/services/server/debt-installments-service"
+import {
+  getAllLegalFeeInstallmentsAsync,
+  getLegalFeesAsync,
+} from "@/lib/services/server/legal-fees-service"
 import { getMonthlyBillsSummaryAsync } from "@/lib/services/server/monthly-bills-service"
 
 export default async function DashboardPage() {
-  const monthlyBillsSummary = await getMonthlyBillsSummaryAsync("2026-06")
+  const month = "2026-06"
+  const [
+    cases,
+    condemnations,
+    condemnationPayments,
+    debtInstallments,
+    debtPayments,
+    legalFees,
+    feeInstallments,
+    monthlyBillsSummary,
+  ] = await Promise.all([
+    getCasesAsync(),
+    getCondemnationsAsync(),
+    getAllCondemnationPaymentsAsync(),
+    getDebtInstallmentsAsync(),
+    getAllDebtInstallmentPaymentsAsync(),
+    getLegalFeesAsync(),
+    getAllLegalFeeInstallmentsAsync(),
+    getMonthlyBillsSummaryAsync(month),
+  ])
+
+  const feeReceivedCents = feeInstallments
+    .filter((item) => item.status === "paid" && item.paidAt?.startsWith(month))
+    .reduce((total, item) => total + item.valueCents, 0)
+  const condemnationReceivedCents = condemnationPayments
+    .filter((item) => item.paidAt.startsWith(month))
+    .reduce((total, item) => total + item.valueCents, 0)
+  const debtReceivedCents = debtPayments
+    .filter((item) => item.status === "paid" && item.paidAt?.startsWith(month))
+    .reduce((total, item) => total + item.valueCents, 0)
+  const receivedCents =
+    feeReceivedCents + condemnationReceivedCents + debtReceivedCents
+  const pendingFeeCents = feeInstallments
+    .filter((item) => item.status === "pending")
+    .reduce((total, item) => total + item.valueCents, 0)
+  const pendingDebtCents = debtPayments
+    .filter((item) => item.status === "pending")
+    .reduce((total, item) => total + item.valueCents, 0)
+  const overdueFeeCents = feeInstallments
+    .filter((item) => item.status === "overdue")
+    .reduce((total, item) => total + item.valueCents, 0)
+  const overdueDebtCents = debtPayments
+    .filter((item) => item.status === "overdue")
+    .reduce((total, item) => total + item.valueCents, 0)
+  const openCondemnationCents = condemnations
+    .filter((item) => item.status !== "paid")
+    .reduce((total, item) => total + item.updatedValueCents, 0)
+  const projectedReceiptsCents =
+    pendingFeeCents + pendingDebtCents + openCondemnationCents
+  const activeCases = cases.filter(
+    (item) => !["archived", "closed"].includes(item.status)
+  )
+
+  const dashboardMetrics = [
+    {
+      detail: "Pagamentos recebidos no mes",
+      icon: CircleDollarSign,
+      label: "Recebido no mes",
+      value: brlFormatter.format(receivedCents / 100),
+    },
+    {
+      detail: "Honorarios, condenacoes e parcelamentos",
+      icon: HandCoins,
+      label: "A receber",
+      value: brlFormatter.format(projectedReceiptsCents / 100),
+    },
+    {
+      detail: "Parcelas e contas vencidas",
+      icon: AlertTriangle,
+      label: "Total vencido",
+      value: brlFormatter.format(
+        (overdueFeeCents + overdueDebtCents + monthlyBillsSummary.overdueCents) /
+          100
+      ),
+    },
+    {
+      detail: `${cases.length} processo(s) cadastrados`,
+      icon: BriefcaseBusiness,
+      label: "Processos ativos",
+      value: String(activeCases.length),
+    },
+    {
+      detail: `${legalFees.length} contrato(s)`,
+      icon: Banknote,
+      label: "Honorarios pendentes",
+      value: brlFormatter.format(pendingFeeCents / 100),
+    },
+    {
+      detail: `${debtInstallments.length} plano(s)`,
+      icon: FileClock,
+      label: "Parcelamentos ativos",
+      value: String(
+        debtInstallments.filter((item) => item.status === "active").length
+      ),
+    },
+    {
+      detail: `${monthlyBillsSummary.bills.length} conta(s) no mes`,
+      icon: ReceiptText,
+      label: "Contas pendentes",
+      value: brlFormatter.format(monthlyBillsSummary.pendingCents / 100),
+    },
+    {
+      detail: `${condemnations.length} condenacao(oes)`,
+      icon: Clock3,
+      label: "Condenacoes abertas",
+      value: brlFormatter.format(openCondemnationCents / 100),
+    },
+  ]
+  const chartsData = {
+    caseStatus: Object.entries(caseStatusLabels).map(([status, label]) => ({
+      name: label,
+      total: cases.filter((item) => item.status === status).length,
+    })),
+    categoryReceipts: [
+      { name: "Honorarios", value: feeReceivedCents },
+      { name: "Condenacoes", value: condemnationReceivedCents },
+      { name: "Parcelamentos", value: debtReceivedCents },
+    ],
+    monthlyFlow: [
+      {
+        entradas: receivedCents / 100,
+        month: "Atual",
+        saidas: monthlyBillsSummary.totalCents / 100,
+      },
+    ],
+  }
+  const recentMatters = cases.slice(0, 5).map((item) => ({
+    amount: brlFormatter.format(item.claimValueCents / 100),
+    client: item.clientId,
+    matter: item.actionType,
+    status: caseStatusLabels[item.status],
+  }))
 
   return (
     <div className="grid gap-6">
@@ -65,9 +220,12 @@ export default async function DashboardPage() {
         ))}
       </section>
 
-      <DashboardCharts />
+      <DashboardCharts data={chartsData} />
 
-      <FinancialDashboard summary={monthlyBillsSummary} />
+      <FinancialDashboard
+        projectedReceiptsCents={projectedReceiptsCents}
+        summary={monthlyBillsSummary}
+      />
 
       <Card>
         <CardHeader>

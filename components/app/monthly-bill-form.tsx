@@ -1,12 +1,17 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { formatMoneyInput, parseMoneyToNumber } from "@/lib/input-masks"
-import { monthlyBillCategoryLabels } from "@/lib/domain"
+import {
+  type MonthlyBillCategory,
+  monthlyBillCategoryLabels,
+} from "@/lib/domain"
+import type { MonthlyBillInput } from "@/lib/services/monthly-bills-service"
 import { FormFeedback } from "@/components/app/form-feedback"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,9 +38,18 @@ const billSchema = z.object({
 
 type BillInput = z.input<typeof billSchema>
 type BillOutput = z.output<typeof billSchema>
+type MonthlyBillFormResult = { error?: string; ok: boolean }
 
-export function MonthlyBillForm() {
-  const [saved, setSaved] = useState(false)
+export function MonthlyBillForm({
+  createMonthlyBillAction,
+}: {
+  createMonthlyBillAction: (
+    input: MonthlyBillInput
+  ) => Promise<MonthlyBillFormResult>
+}) {
+  const router = useRouter()
+  const [feedback, setFeedback] = useState("")
+  const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
   const form = useForm<BillInput, unknown, BillOutput>({
     resolver: zodResolver(billSchema),
@@ -49,10 +63,37 @@ export function MonthlyBillForm() {
     },
   })
 
-  function onSubmit() {
+  async function onSubmit(values: BillOutput) {
+    setError("")
+    setFeedback("")
     setSaving(true)
-    setSaved(true)
-    window.setTimeout(() => setSaving(false), 450)
+
+    const result = await createMonthlyBillAction({
+      category: values.category as MonthlyBillCategory,
+      description: values.description,
+      dueDate: values.dueDate,
+      notes: values.notes ?? "",
+      recurring: values.recurring,
+      valueCents: Math.round(values.value * 100),
+    })
+
+    setSaving(false)
+
+    if (!result.ok) {
+      setError(result.error ?? "Nao foi possivel salvar a conta.")
+      return
+    }
+
+    setFeedback("Conta mensal cadastrada com sucesso.")
+    form.reset({
+      category: "office",
+      description: "",
+      dueDate: new Date().toISOString().slice(0, 10),
+      notes: "",
+      recurring: false,
+      value: "R$ 100,00",
+    })
+    router.refresh()
   }
 
   return (
@@ -60,7 +101,7 @@ export function MonthlyBillForm() {
       <CardHeader>
         <CardTitle>Nova conta mensal</CardTitle>
         <CardDescription>
-          Formulario mockado para despesas recorrentes ou avulsas.
+          Cadastre despesas recorrentes ou avulsas no banco.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -116,10 +157,11 @@ export function MonthlyBillForm() {
             />
           </Field>
 
-          {saved ? (
-            <FormFeedback>
-              Conta salva no mock. Depois, este fluxo gravara em monthly_bills.
-            </FormFeedback>
+          {feedback ? <FormFeedback>{feedback}</FormFeedback> : null}
+          {error ? (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/15 px-3 py-2 text-sm text-[#ffb4b4]">
+              {error}
+            </div>
           ) : null}
 
           <div className="flex justify-end">

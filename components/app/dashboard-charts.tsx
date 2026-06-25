@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import type { DashboardChartsData } from "./dashboard-charts-client"
 
 function ChartsSkeleton() {
   return (
@@ -56,6 +57,6 @@ const DashboardChartsClient = dynamic(
   }
 )
 
-export function DashboardCharts() {
-  return <DashboardChartsClient />
+export function DashboardCharts({ data }: { data: DashboardChartsData }) {
+  return <DashboardChartsClient data={data} />
 }

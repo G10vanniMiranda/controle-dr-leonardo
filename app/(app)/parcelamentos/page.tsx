@@ -5,6 +5,8 @@ import {
   getDebtInstallmentsAsync,
 } from "@/lib/services/server/debt-installments-service"
 
+import { markDebtInstallmentPaymentAsPaidAction } from "./actions"
+
 export default async function ParcelamentosPage() {
   const [clients, debtInstallments, payments] = await Promise.all([
     getClientsAsync(),
@@ -17,6 +19,9 @@ export default async function ParcelamentosPage() {
       clients={clients}
       debtInstallments={debtInstallments}
       initialPayments={payments}
+      markDebtInstallmentPaymentAsPaidAction={
+        markDebtInstallmentPaymentAsPaidAction
+      }
     />
   )
 }

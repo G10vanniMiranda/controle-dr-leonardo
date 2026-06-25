@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Banknote, CheckCircle2, Gavel, Plus, Search } from "lucide-react"
 
 import { brlFormatter, dateFormatter } from "@/lib/formatters"
@@ -40,11 +41,22 @@ export function CondemnationsView({
   cases,
   condemnations,
   initialPayments,
+  registerCondemnationPaymentAction,
+  updateCondemnationStatusAction,
 }: {
   cases: LegalCase[]
   condemnations: Condemnation[]
   initialPayments: CondemnationPayment[]
+  registerCondemnationPaymentAction: (
+    condemnation: Condemnation,
+    valueCents: number
+  ) => Promise<{ error?: string; ok: boolean }>
+  updateCondemnationStatusAction: (
+    id: string,
+    status: Condemnation["status"]
+  ) => Promise<{ error?: string; ok: boolean }>
 }) {
+  const router = useRouter()
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("todos")
   const [items, setItems] = useState(condemnations)
@@ -130,7 +142,7 @@ export function CondemnationsView({
     0
   )
 
-  function addPayment(condemnation: Condemnation) {
+  async function addPayment(condemnation: Condemnation) {
     const remainingCents = Math.max(
       condemnation.updatedValueCents -
         payments
@@ -148,36 +160,72 @@ export function CondemnationsView({
       return
     }
 
+    const result = await registerCondemnationPaymentAction(
+      condemnation,
+      valueCents
+    )
+
+    if (!result.ok) {
+      setFeedback({
+        message: result.error ?? "Nao foi possivel registrar o pagamento.",
+        tone: "error",
+      })
+      return
+    }
+
     setPayments((currentPayments) => [
       ...currentPayments,
       {
         condemnationId: condemnation.id,
-        notes: "Pagamento simulado registrado na sessao.",
+        notes: "Pagamento registrado pelo sistema.",
         paidAt: new Date().toISOString().slice(0, 10),
         paymentMethod: "PIX",
         valueCents,
         id: `${condemnation.id}-pagamento-${currentPayments.length + 1}`,
       },
     ])
-    setFeedback({ message: "Pagamento registrado no mock da sessao." })
+    setFeedback({ message: "Pagamento registrado." })
+    router.refresh()
   }
 
-  function transformToInstallment(id: string) {
+  async function transformToInstallment(id: string) {
+    const result = await updateCondemnationStatusAction(id, "installment")
+
+    if (!result.ok) {
+      setFeedback({
+        message: result.error ?? "Nao foi possivel parcelar a condenacao.",
+        tone: "error",
+      })
+      return
+    }
+
     setItems((currentItems) =>
       currentItems.map((item) =>
         item.id === id ? { ...item, status: "installment" } : item
       )
     )
-    setFeedback({ message: "Condenacao transformada em parcelamento no mock." })
+    setFeedback({ message: "Condenacao transformada em parcelamento." })
+    router.refresh()
   }
 
-  function markAsPaid(id: string) {
+  async function markAsPaid(id: string) {
+    const result = await updateCondemnationStatusAction(id, "paid")
+
+    if (!result.ok) {
+      setFeedback({
+        message: result.error ?? "Nao foi possivel quitar a condenacao.",
+        tone: "error",
+      })
+      return
+    }
+
     setItems((currentItems) =>
       currentItems.map((item) =>
         item.id === id ? { ...item, status: "paid" } : item
       )
     )
-    setFeedback({ message: "Condenacao marcada como quitada no mock." })
+    setFeedback({ message: "Condenacao marcada como quitada." })
+    router.refresh()
   }
 
   return (

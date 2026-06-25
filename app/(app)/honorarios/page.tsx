@@ -8,6 +8,8 @@ import {
   getLegalFeesAsync,
 } from "@/lib/services/server/legal-fees-service"
 
+import { createLegalFeeAction, markFeeInstallmentAsPaidAction } from "./actions"
+
 export default async function HonorariosPage() {
   const [cases, clients, legalFees, installments] = await Promise.all([
     getCasesAsync(),
@@ -28,9 +30,14 @@ export default async function HonorariosPage() {
         clients={clients}
         installments={installments}
         legalFees={legalFees}
+        markFeeInstallmentAsPaidAction={markFeeInstallmentAsPaidAction}
         summariesByLegalFeeId={Object.fromEntries(summaries)}
       />
-      <LegalFeeForm cases={cases} clients={clients} />
+      <LegalFeeForm
+        cases={cases}
+        clients={clients}
+        createLegalFeeAction={createLegalFeeAction}
+      />
     </div>
   )
 }

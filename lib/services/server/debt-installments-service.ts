@@ -5,6 +5,7 @@ import {
   getDebtInstallmentPayments,
   getDebtInstallmentSummary,
 } from "@/lib/mock-data"
+import type { DebtInstallmentPayment } from "@/lib/domain"
 import { getDataProvider } from "@/lib/services/data-provider"
 import type {
   DebtInstallmentInput,
@@ -67,4 +68,19 @@ export async function updateDebtInstallmentAsync(
 
   const currentPlan = debtInstallments.find((plan) => plan.id === id)
   return currentPlan ? { ...currentPlan, ...input } : undefined
+}
+
+export async function markDebtInstallmentPaymentAsPaidAsync(
+  payment: DebtInstallmentPayment
+) {
+  if (getDataProvider() === "supabase") {
+    return supabaseService.markDebtInstallmentPaymentAsPaid(payment)
+  }
+
+  return {
+    ...payment,
+    paidAt: new Date().toISOString().slice(0, 10),
+    receiptName: `comprovante-${payment.id}.pdf`,
+    status: "paid" as const,
+  }
 }

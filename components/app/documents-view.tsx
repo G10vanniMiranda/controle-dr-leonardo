@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { FileArchive, FileUp, Search, ShieldCheck } from "lucide-react"
 
 import { dateFormatter } from "@/lib/formatters"
@@ -47,11 +48,25 @@ const documentSortAccessors: Record<
   type: (document) => documentTypeLabels[document.type],
 }
 
-export function DocumentsView({ documents }: { documents: DocumentRecord[] }) {
+export function DocumentsView({
+  documents,
+  uploadDocumentAction,
+}: {
+  documents: DocumentRecord[]
+  uploadDocumentAction: (
+    formData: FormData
+  ) => Promise<{ error?: string; ok: boolean }>
+}) {
+  const router = useRouter()
   const [query, setQuery] = useState("")
   const [module, setModule] = useState("todos")
   const [type, setType] = useState("todos")
   const [uploadedFile, setUploadedFile] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [feedback, setFeedback] = useState<{
+    message: string
+    tone?: "success" | "error"
+  } | null>(null)
 
   const filteredDocuments = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -86,6 +101,27 @@ export function DocumentsView({ documents }: { documents: DocumentRecord[] }) {
     pageSize: 6,
     sortAccessors: documentSortAccessors,
   })
+
+  async function onUpload(formData: FormData) {
+    setUploading(true)
+    setFeedback(null)
+
+    const result = await uploadDocumentAction(formData)
+
+    setUploading(false)
+
+    if (!result.ok) {
+      setFeedback({
+        message: result.error ?? "Nao foi possivel enviar o documento.",
+        tone: "error",
+      })
+      return
+    }
+
+    setUploadedFile(null)
+    setFeedback({ message: "Documento enviado com sucesso." })
+    router.refresh()
+  }
 
   return (
     <div className="grid gap-6">
@@ -150,27 +186,69 @@ export function DocumentsView({ documents }: { documents: DocumentRecord[] }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Upload simulado</CardTitle>
+            <CardTitle>Upload</CardTitle>
             <CardDescription>
-              O arquivo sera enviado ao Supabase Storage quando o banco for conectado.
+              Envie arquivos ao Supabase Storage protegido por usuario.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-3">
+          <CardContent>
+            <form action={onUpload} className="grid gap-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <select
+                  className="h-10 rounded-xl border border-input bg-input px-3 text-sm text-foreground focus:border-ring focus:ring-2 focus:ring-ring/35 focus:outline-none"
+                  name="module"
+                  defaultValue={"client"}
+                >
+                  {Object.entries(documentModuleLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="h-10 rounded-xl border border-input bg-input px-3 text-sm text-foreground focus:border-ring focus:ring-2 focus:ring-ring/35 focus:outline-none"
+                  name="type"
+                  defaultValue={"other"}
+                >
+                  {Object.entries(documentTypeLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Input
+                name="linkedEntityLabel"
+                placeholder="Vinculo: cliente, processo ou contrato"
+                required
+              />
             <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-secondary p-4 text-center text-sm text-muted-foreground transition-colors hover:bg-hover">
               <FileUp className="mb-2 size-5 text-primary" />
               <span>{uploadedFile ?? "Selecionar arquivo"}</span>
               <input
                 className="sr-only"
+                name="file"
                 type="file"
+                required
                 onChange={(event) => {
                   setUploadedFile(event.target.files?.[0]?.name ?? null)
                 }}
               />
             </label>
+              {feedback ? (
+                <FormFeedback tone={feedback.tone}>{feedback.message}</FormFeedback>
+              ) : null}
+              <button
+                className="inline-flex h-10 cursor-pointer items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[#1d4ed8] disabled:pointer-events-none disabled:opacity-45"
+                type="submit"
+                disabled={uploading}
+              >
+                {uploading ? "Enviando..." : "Enviar documento"}
+              </button>
+            </form>
             {uploadedFile ? (
               <FormFeedback>
-                Arquivo selecionado no mock. O envio real sera ligado ao Supabase
-                Storage.
+                Arquivo selecionado para envio ao Storage.
               </FormFeedback>
             ) : null}
             <div className="flex items-center gap-2 rounded-xl border border-border bg-secondary p-3 text-sm text-muted-foreground">
@@ -185,7 +263,7 @@ export function DocumentsView({ documents }: { documents: DocumentRecord[] }) {
         <CardHeader>
           <CardTitle>Arquivos vinculados</CardTitle>
           <CardDescription>
-            {filteredDocuments.length} documento(s) encontrado(s) no mock local.
+            {filteredDocuments.length} documento(s) encontrado(s).
           </CardDescription>
         </CardHeader>
         <CardContent>

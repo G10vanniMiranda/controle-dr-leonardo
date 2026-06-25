@@ -18,11 +18,12 @@ type MonthlyBillsSummary = {
 }
 
 export function FinancialDashboard({
+  projectedReceiptsCents,
   summary,
 }: {
+  projectedReceiptsCents: number
   summary: MonthlyBillsSummary
 }) {
-  const projectedReceiptsCents = 5280000
   const balanceCents = projectedReceiptsCents - summary.totalCents
 
   const cards = [
@@ -30,7 +31,7 @@ export function FinancialDashboard({
       icon: TrendingUp,
       label: "Entradas previstas",
       value: brlFormatter.format(projectedReceiptsCents / 100),
-      detail: "Honorarios e recebimentos mockados",
+      detail: "Honorarios, condenacoes e parcelamentos",
     },
     {
       icon: TrendingDown,
@@ -57,7 +58,7 @@ export function FinancialDashboard({
       <CardHeader>
         <CardTitle>Dashboard financeiro</CardTitle>
         <CardDescription>
-          Recorte mensal mockado para acompanhar entradas, saidas e saldo.
+          Recorte mensal com entradas, saidas e saldo projetado.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

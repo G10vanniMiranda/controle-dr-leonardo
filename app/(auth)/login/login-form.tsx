@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Eye, EyeOff } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -22,6 +23,7 @@ export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -79,12 +81,28 @@ export function LoginForm() {
 
       <div className="grid gap-2">
         <Label htmlFor="password">Senha</Label>
-        <Input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          {...form.register("password")}
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            className="pr-11"
+            {...form.register("password")}
+          />
+          <button
+            type="button"
+            className="absolute top-1/2 right-3 inline-flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-tertiary transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/45 focus-visible:outline-none"
+            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+            aria-pressed={showPassword}
+            onClick={() => setShowPassword((current) => !current)}
+          >
+            {showPassword ? (
+              <EyeOff className="size-4" />
+            ) : (
+              <Eye className="size-4" />
+            )}
+          </button>
+        </div>
         {form.formState.errors.password ? (
           <p className="text-xs text-destructive">
             {form.formState.errors.password.message}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useWatch } from "react-hook-form"
 import { z } from "zod"
@@ -11,6 +12,7 @@ import {
   type Client,
   type LegalCase,
 } from "@/lib/domain"
+import type { LegalFeeInput } from "@/lib/services/legal-fees-service"
 import { FormFeedback } from "@/components/app/form-feedback"
 import { generateInstallmentPreview } from "@/lib/services/legal-fees-service"
 import { Button } from "@/components/ui/button"
@@ -51,15 +53,20 @@ const legalFeeSchema = z.object({
 
 type LegalFeeFormInput = z.input<typeof legalFeeSchema>
 type LegalFeeFormValues = z.output<typeof legalFeeSchema>
+type LegalFeeFormResult = { error?: string; ok: boolean }
 
 export function LegalFeeForm({
   cases,
   clients,
+  createLegalFeeAction,
 }: {
   cases: LegalCase[]
   clients: Client[]
+  createLegalFeeAction: (input: LegalFeeInput) => Promise<LegalFeeFormResult>
 }) {
-  const [saved, setSaved] = useState(false)
+  const router = useRouter()
+  const [feedback, setFeedback] = useState("")
+  const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
   const form = useForm<LegalFeeFormInput, unknown, LegalFeeFormValues>({
     resolver: zodResolver(legalFeeSchema),
@@ -99,10 +106,42 @@ export function LegalFeeForm({
     0
   )
 
-  function onSubmit() {
+  async function onSubmit(values: LegalFeeFormValues) {
+    setError("")
+    setFeedback("")
     setSaving(true)
-    setSaved(true)
-    window.setTimeout(() => setSaving(false), 450)
+
+    const result = await createLegalFeeAction({
+      caseId: values.caseId || undefined,
+      clientId: values.clientId,
+      contractName: values.contractName,
+      entryValueCents: Math.round(values.entryValue * 100),
+      firstDueDate: values.firstDueDate,
+      installmentValueCents: Math.round(values.installmentValue * 100),
+      installmentsCount: values.installmentsCount,
+      notes: values.notes ?? "",
+      totalValueCents: totalCents,
+    })
+
+    setSaving(false)
+
+    if (!result.ok) {
+      setError(result.error ?? "Nao foi possivel gerar o contrato.")
+      return
+    }
+
+    setFeedback("Contrato cadastrado e parcelas geradas com sucesso.")
+    form.reset({
+      caseId: cases[0]?.id ?? "",
+      clientId: clients[0]?.id ?? "",
+      contractName: "",
+      entryValue: "R$ 0,00",
+      firstDueDate: new Date().toISOString().slice(0, 10),
+      installmentsCount: 6,
+      installmentValue: "R$ 1.000,00",
+      notes: "",
+    })
+    router.refresh()
   }
 
   return (
@@ -223,10 +262,11 @@ export function LegalFeeForm({
             </Table>
           </div>
 
-          {saved ? (
-            <FormFeedback>
-              Contrato simulado com parcelas geradas. Depois, isso gravara em legal_fees e fee_installments.
-            </FormFeedback>
+          {feedback ? <FormFeedback>{feedback}</FormFeedback> : null}
+          {error ? (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/15 px-3 py-2 text-sm text-[#ffb4b4]">
+              {error}
+            </div>
           ) : null}
 
           <div className="flex justify-end">
