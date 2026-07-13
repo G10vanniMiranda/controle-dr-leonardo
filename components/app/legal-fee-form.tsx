@@ -126,7 +126,7 @@ export function LegalFeeForm({
     setSaving(false)
 
     if (!result.ok) {
-      setError(result.error ?? "Nao foi possivel gerar o contrato.")
+      setError(result.error ?? "Não foi possível gerar o contrato.")
       return
     }
 
@@ -147,9 +147,9 @@ export function LegalFeeForm({
   return (
     <Card id="novo-contrato">
       <CardHeader>
-        <CardTitle>Novo contrato de honorarios</CardTitle>
+        <CardTitle>Novo contrato de honorários</CardTitle>
         <CardDescription>
-          Informe os valores para gerar a previsao automatica das parcelas.
+          Informe os valores para gerar a previsão automática das parcelas.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -180,7 +180,7 @@ export function LegalFeeForm({
               </select>
             </Field>
             <Field label="Nome do contrato" error={form.formState.errors.contractName?.message}>
-              <Input placeholder="Contrato de honorarios - cliente" {...form.register("contractName")} />
+              <Input placeholder="Contrato de honorários - cliente" {...form.register("contractName")} />
             </Field>
             <Field label="Entrada em reais" error={form.formState.errors.entryValue?.message}>
               <Input
@@ -217,10 +217,10 @@ export function LegalFeeForm({
             </Field>
           </div>
 
-          <Field label="Observacoes">
+          <Field label="Observações">
             <textarea
               className="min-h-24 rounded-xl border border-input bg-input px-3 py-2 text-sm text-foreground placeholder:text-tertiary focus:border-ring focus:ring-2 focus:ring-ring/35 focus:outline-none"
-              placeholder="Observacoes internas do contrato"
+              placeholder="Observações internas do contrato"
               {...form.register("notes")}
             />
           </Field>
@@ -228,7 +228,7 @@ export function LegalFeeForm({
           <div className="rounded-2xl border border-border bg-secondary p-4">
             <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-semibold text-foreground">Previsao de parcelas</p>
+                <p className="font-semibold text-foreground">Previsão de parcelas</p>
                 <p className="text-sm text-muted-foreground">
                   Total previsto: {brlFormatter.format(totalCents / 100)}
                 </p>

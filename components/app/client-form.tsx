@@ -32,8 +32,8 @@ const clientSchema = z.object({
   phone: z.string().refine((value) => onlyDigits(value).length >= 10, {
     message: "Informe um telefone completo.",
   }),
-  email: z.string().email("Informe um e-mail valido."),
-  address: z.string().min(5, "Informe o endereco."),
+  email: z.string().email("Informe um e-mail válido."),
+  address: z.string().min(5, "Informe o endereço."),
   status: z.enum(["active", "inactive"]),
   notes: z.string().optional(),
 })
@@ -90,7 +90,7 @@ export function ClientForm({
     setSaving(false)
 
     if (!result.ok) {
-      setError(result.error ?? "Nao foi possivel salvar o cliente.")
+      setError(result.error ?? "Não foi possível salvar o cliente.")
       return
     }
 
@@ -147,7 +147,7 @@ export function ClientForm({
             <Field label="E-mail" error={form.formState.errors.email?.message}>
               <Input placeholder="cliente@email.com" {...form.register("email")} />
             </Field>
-            <Field label="Endereco" error={form.formState.errors.address?.message}>
+            <Field label="Endereço" error={form.formState.errors.address?.message}>
               <Input placeholder="Rua, numero, bairro, cidade" {...form.register("address")} />
             </Field>
             <Field label="Status">
@@ -161,7 +161,7 @@ export function ClientForm({
             </Field>
           </div>
 
-          <Field label="Observacoes">
+          <Field label="Observações">
             <textarea
               className="min-h-28 rounded-xl border border-input bg-input px-3 py-2 text-sm text-foreground placeholder:text-tertiary focus:border-ring focus:ring-2 focus:ring-ring/35 focus:outline-none"
               placeholder="Notas internas sobre o cliente"

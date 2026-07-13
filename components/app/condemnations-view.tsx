@@ -145,16 +145,16 @@ export function CondemnationsView({
   async function addPayment(condemnation: Condemnation) {
     const remainingCents = Math.max(
       condemnation.updatedValueCents -
-        payments
-          .filter((payment) => payment.condemnationId === condemnation.id)
-          .reduce((total, payment) => total + payment.valueCents, 0),
+      payments
+        .filter((payment) => payment.condemnationId === condemnation.id)
+        .reduce((total, payment) => total + payment.valueCents, 0),
       0
     )
     const valueCents = Math.min(remainingCents, 500000)
 
     if (valueCents <= 0) {
       setFeedback({
-        message: "Esta condenacao nao possui saldo pendente para pagamento.",
+        message: "Esta condenação nao possui saldo pendente para pagamento.",
         tone: "error",
       })
       return
@@ -167,7 +167,7 @@ export function CondemnationsView({
 
     if (!result.ok) {
       setFeedback({
-        message: result.error ?? "Nao foi possivel registrar o pagamento.",
+        message: result.error ?? "Não foi possível registrar o pagamento.",
         tone: "error",
       })
       return
@@ -193,7 +193,7 @@ export function CondemnationsView({
 
     if (!result.ok) {
       setFeedback({
-        message: result.error ?? "Nao foi possivel parcelar a condenacao.",
+        message: result.error ?? "Não foi possível parcelar a condenação.",
         tone: "error",
       })
       return
@@ -204,7 +204,7 @@ export function CondemnationsView({
         item.id === id ? { ...item, status: "installment" } : item
       )
     )
-    setFeedback({ message: "Condenacao transformada em parcelamento." })
+    setFeedback({ message: "Condenação transformada em parcelamento." })
     router.refresh()
   }
 
@@ -213,7 +213,7 @@ export function CondemnationsView({
 
     if (!result.ok) {
       setFeedback({
-        message: result.error ?? "Nao foi possivel quitar a condenacao.",
+        message: result.error ?? "Não foi possível quitar a condenação.",
         tone: "error",
       })
       return
@@ -224,7 +224,7 @@ export function CondemnationsView({
         item.id === id ? { ...item, status: "paid" } : item
       )
     )
-    setFeedback({ message: "Condenacao marcada como quitada." })
+    setFeedback({ message: "Condenação marcada como quitada." })
     router.refresh()
   }
 
@@ -239,14 +239,14 @@ export function CondemnationsView({
             Condenacoes
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Controle de condenacoes, pagamentos recebidos, saldo e execucao.
+            Controle de condenações, pagamentos recebidos, saldo e execução.
           </p>
         </div>
       </div>
 
       <section className="grid gap-4 md:grid-cols-3">
         <SummaryCard icon={Gavel} label="Em aberto" value={brlFormatter.format(totalOpenCents / 100)} />
-        <SummaryCard icon={Banknote} label="Em execucao" value={brlFormatter.format(executionCents / 100)} />
+        <SummaryCard icon={Banknote} label="Em execução" value={brlFormatter.format(executionCents / 100)} />
         <SummaryCard icon={CheckCircle2} label="Recebido" value={brlFormatter.format(paidCents / 100)} />
       </section>
 
@@ -263,7 +263,7 @@ export function CondemnationsView({
               <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-tertiary" />
               <Input
                 className="pl-9"
-                placeholder="Buscar condenacao"
+                placeholder="Buscar condenação"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
@@ -286,9 +286,9 @@ export function CondemnationsView({
 
       <Card>
         <CardHeader>
-          <CardTitle>Condenacoes cadastradas</CardTitle>
+          <CardTitle>Condenações cadastradas</CardTitle>
           <CardDescription>
-            Registre pagamentos e transforme condenacoes em parcelamento.
+            Registre pagamentos e transforme condenações em parcelamento.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -337,10 +337,10 @@ export function CondemnationsView({
                   <TableRow key={condemnation.id}>
                     <TableCell>
                       <div className="font-medium text-foreground">
-                        {legalCase?.caseNumber ?? "Processo nao encontrado"}
+                        {legalCase?.caseNumber ?? "Processo não encontrado"}
                       </div>
                       <div className="text-xs text-tertiary">
-                        Decisao em {dateFormatter.format(new Date(condemnation.decisionDate))}
+                        Decisão em {dateFormatter.format(new Date(condemnation.decisionDate))}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -406,8 +406,8 @@ export function CondemnationsView({
           {filtered.length === 0 ? (
             <EmptyState
               className="mt-4"
-              title="Nenhuma condenacao encontrada"
-              description="Ajuste os filtros para localizar condenacoes por processo, partes ou status."
+              title="Nenhuma condenação encontrada"
+              description="Ajuste os filtros para localizar condenações por processo, partes ou status."
             />
           ) : (
             <ListPagination

@@ -16,7 +16,7 @@ export type CondemnationActionResult = {
 function getErrorMessage(error: unknown) {
   return error instanceof Error
     ? error.message
-    : "Nao foi possivel concluir a operacao."
+    : "Não foi possivel concluir a operação."
 }
 
 export async function registerCondemnationPaymentAction(

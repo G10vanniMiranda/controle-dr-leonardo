@@ -27,9 +27,9 @@ export default function Error({
           <BackToDashboardButton />
         </>
       }
-      description="Uma falha inesperada impediu o carregamento desta area. Tente novamente ou retorne ao dashboard para continuar usando o sistema."
+      description="Uma falha inesperada impediu o carregamento desta área. Tente novamente ou retorne ao dashboard para continuar usando o sistema."
       eyebrow={error.digest ? `Erro ${error.digest}` : "Erro de sistema"}
-      title="Nao foi possivel carregar esta tela"
+      title="Não foi possível carregar esta tela"
     />
   )
 }

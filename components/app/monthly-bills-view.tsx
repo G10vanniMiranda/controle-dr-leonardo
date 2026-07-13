@@ -126,7 +126,7 @@ export function MonthlyBillsView({
     const result = await markMonthlyBillAsPaidAction(id)
 
     if (!result.ok) {
-      setFeedback(result.error ?? "Nao foi possivel marcar a conta como paga.")
+      setFeedback(result.error ?? "Não foi possível marcar a conta como paga.")
       return
     }
 
@@ -134,10 +134,10 @@ export function MonthlyBillsView({
       currentBills.map((bill) =>
         bill.id === id
           ? {
-              ...bill,
-              paidAt: new Date().toISOString().slice(0, 10),
-              status: "paid",
-            }
+            ...bill,
+            paidAt: new Date().toISOString().slice(0, 10),
+            status: "paid",
+          }
           : bill
       )
     )
@@ -194,7 +194,7 @@ export function MonthlyBillsView({
         <CardHeader>
           <CardTitle>Filtros mensais</CardTitle>
           <CardDescription>
-            Filtre por mes, categoria, status e descricao da conta.
+            Filtre por mês, categoria, status e descrição da conta.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -243,7 +243,7 @@ export function MonthlyBillsView({
 
       <Card>
         <CardHeader>
-          <CardTitle>Despesas do mes</CardTitle>
+          <CardTitle>Despesas do mês</CardTitle>
           <CardDescription>
             {filteredBills.length} conta(s) encontrada(s).
           </CardDescription>
@@ -291,7 +291,7 @@ export function MonthlyBillsView({
                     Valor
                   </SortHeader>
                 </TableHead>
-                <TableHead className="text-right">Acao</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -341,7 +341,7 @@ export function MonthlyBillsView({
             <EmptyState
               className="mt-4"
               title="Nenhuma conta encontrada"
-              description="Revise mes, categoria, status ou termo de busca para localizar despesas."
+              description="Revise mês, categoria, status ou termo de busca para localizar despesas."
             />
           ) : (
             <ListPagination

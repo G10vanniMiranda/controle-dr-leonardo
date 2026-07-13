@@ -8,7 +8,7 @@ export function PageLoadingSkeleton() {
         <div className="space-y-3">
           <Skeleton className="h-3 w-28" />
           <Skeleton className="h-8 w-64 max-w-[70vw]" />
-          <Skeleton className="h-4 w-[34rem] max-w-full" />
+          <Skeleton className="h-4 w-136 max-w-full" />
         </div>
         <Skeleton className="h-10 w-36" />
       </div>

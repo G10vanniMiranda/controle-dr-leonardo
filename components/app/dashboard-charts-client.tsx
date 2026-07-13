@@ -93,33 +93,33 @@ export function DashboardChartsClient({ data }: { data: DashboardChartsData }) {
       <Card className="min-w-0 xl:col-span-2">
         <CardHeader>
           <CardTitle>Fluxo mensal</CardTitle>
-          <CardDescription>Entradas e saidas previstas em reais.</CardDescription>
+          <CardDescription>Entradas e saídas previstas em reais.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartFrame className="h-80 min-w-0">
             {({ height, width }) => (
-            <BarChart data={monthlyFlow} width={width} height={height}>
-              <CartesianGrid vertical={false} stroke="#404040" strokeDasharray="3 3" />
-              <XAxis dataKey="month" tick={axisTick} tickLine={false} axisLine={false} />
-              <YAxis
-                tick={axisTick}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `R$ ${Number(value) / 1000}k`}
-              />
-              <Tooltip
-                contentStyle={tooltipStyle}
-                cursor={{ fill: "#3a3a3a", opacity: 0.35 }}
-                formatter={(value) =>
-                  new Intl.NumberFormat("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  }).format(Number(value))
-                }
-              />
-              <Bar dataKey="entradas" fill="#2563eb" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="saidas" fill="#6b7280" radius={[6, 6, 0, 0]} />
-            </BarChart>
+              <BarChart data={monthlyFlow} width={width} height={height}>
+                <CartesianGrid vertical={false} stroke="#404040" strokeDasharray="3 3" />
+                <XAxis dataKey="month" tick={axisTick} tickLine={false} axisLine={false} />
+                <YAxis
+                  tick={axisTick}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => `R$ ${Number(value) / 1000}k`}
+                />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  cursor={{ fill: "#3a3a3a", opacity: 0.35 }}
+                  formatter={(value) =>
+                    new Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(Number(value))
+                  }
+                />
+                <Bar dataKey="entradas" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="saidas" fill="#6b7280" radius={[6, 6, 0, 0]} />
+              </BarChart>
             )}
           </ChartFrame>
         </CardContent>
@@ -128,7 +128,7 @@ export function DashboardChartsClient({ data }: { data: DashboardChartsData }) {
       <Card className="min-w-0">
         <CardHeader>
           <CardTitle>Recebimentos</CardTitle>
-          <CardDescription>Distribuicao por categoria.</CardDescription>
+          <CardDescription>Distribuição por categoria.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartFrame className="h-52 min-w-0">
@@ -180,25 +180,25 @@ export function DashboardChartsClient({ data }: { data: DashboardChartsData }) {
       <Card className="min-w-0 xl:col-span-3">
         <CardHeader>
           <CardTitle>Status dos processos</CardTitle>
-          <CardDescription>Visao operacional por fase atual.</CardDescription>
+          <CardDescription>Visão operacional por fase atual.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartFrame className="h-72 min-w-0">
             {({ height, width }) => (
               <BarChart data={caseStatus} layout="vertical" width={width} height={height}>
-              <CartesianGrid horizontal={false} stroke="#404040" strokeDasharray="3 3" />
-              <XAxis type="number" tick={axisTick} tickLine={false} axisLine={false} />
-              <YAxis
-                dataKey="name"
-                type="category"
-                width={130}
-                tick={axisTick}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "#3a3a3a", opacity: 0.35 }} />
-              <Bar dataKey="total" fill="#2563eb" radius={[0, 6, 6, 0]} />
-            </BarChart>
+                <CartesianGrid horizontal={false} stroke="#404040" strokeDasharray="3 3" />
+                <XAxis type="number" tick={axisTick} tickLine={false} axisLine={false} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={130}
+                  tick={axisTick}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "#3a3a3a", opacity: 0.35 }} />
+                <Bar dataKey="total" fill="#2563eb" radius={[0, 6, 6, 0]} />
+              </BarChart>
             )}
           </ChartFrame>
         </CardContent>

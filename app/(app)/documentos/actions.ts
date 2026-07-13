@@ -56,15 +56,15 @@ export async function uploadDocumentAction(
     const file = formData.get("file")
 
     if (!allowedModules.includes(documentModule)) {
-      return { error: "Modulo do documento invalido.", ok: false }
+      return { error: "Módulo do documento inválido.", ok: false }
     }
 
     if (!allowedTypes.includes(type)) {
-      return { error: "Tipo do documento invalido.", ok: false }
+      return { error: "Tipo do documento inválido.", ok: false }
     }
 
     if (!linkedEntityLabel) {
-      return { error: "Informe o vinculo do documento.", ok: false }
+      return { error: "Informe o vínculo do documento.", ok: false }
     }
 
     if (!(file instanceof File) || file.size === 0) {
@@ -75,7 +75,7 @@ export async function uploadDocumentAction(
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
     if (userError || !userData.user) {
-      return { error: "Usuario nao autenticado.", ok: false }
+      return { error: "Usuário não autenticado.", ok: false }
     }
 
     const storagePath = `${userData.user.id}/${documentModule}/${Date.now()}-${sanitizeFileName(
@@ -118,7 +118,7 @@ export async function uploadDocumentAction(
       error:
         error instanceof Error
           ? error.message
-          : "Nao foi possivel enviar o documento.",
+          : "Não foi possivel enviar o documento.",
       ok: false,
     }
   }

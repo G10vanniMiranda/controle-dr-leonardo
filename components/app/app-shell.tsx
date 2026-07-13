@@ -68,7 +68,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="mt-8 border-t border-sidebar-border pt-5">
         <p className="px-3 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">
-          Navegacao
+          Navegação
         </p>
         <nav className="mt-3 grid gap-1">
           {navigationItems.map((item) => (
@@ -79,7 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="mt-8 rounded-2xl border border-sidebar-border bg-secondary/45 p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">
-          Acoes rapidas
+          Ações rápidas
         </p>
         <div className="mt-3 grid gap-2">
           {quickActions.map((action) => (
@@ -140,7 +140,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <Button variant="outline" size="icon">
               <Bell className="size-4" />
-              <span className="sr-only">Notificacoes</span>
+              <span className="sr-only">Notificações</span>
             </Button>
             <div className="hidden items-center gap-3 rounded-2xl border border-border bg-secondary px-3 py-2 sm:flex">
               <div className="flex size-9 items-center justify-center rounded-xl bg-hover text-sm font-semibold text-foreground">

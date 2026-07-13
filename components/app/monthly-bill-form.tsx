@@ -80,7 +80,7 @@ export function MonthlyBillForm({
     setSaving(false)
 
     if (!result.ok) {
-      setError(result.error ?? "Nao foi possivel salvar a conta.")
+      setError(result.error ?? "Não foi possível salvar a conta.")
       return
     }
 
@@ -108,7 +108,7 @@ export function MonthlyBillForm({
         <form className="grid gap-5" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Descricao" error={form.formState.errors.description?.message}>
-              <Input placeholder="Ex.: Aluguel do escritorio" {...form.register("description")} />
+              <Input placeholder="Ex.: Aluguel do escritório" {...form.register("description")} />
             </Field>
             <Field label="Categoria">
               <select

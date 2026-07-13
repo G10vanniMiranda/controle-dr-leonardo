@@ -112,7 +112,7 @@ export function DocumentsView({
 
     if (!result.ok) {
       setFeedback({
-        message: result.error ?? "Nao foi possivel enviar o documento.",
+        message: result.error ?? "Não foi possível enviar o documento.",
         tone: "error",
       })
       return
@@ -133,7 +133,7 @@ export function DocumentsView({
           Documentos
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Anexos vinculados a clientes, processos, honorarios, condenacoes e parcelamentos.
+          Anexos vinculados a clientes, processos, honorários, condenações e parcelamentos.
         </p>
       </div>
 
@@ -142,7 +142,7 @@ export function DocumentsView({
           <CardHeader>
             <CardTitle>Filtros</CardTitle>
             <CardDescription>
-              Pesquisa e vinculacao visual dos documentos protegidos por usuario.
+              Pesquisa e vinculação visual dos documentos protegidos por usuário.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -188,7 +188,7 @@ export function DocumentsView({
           <CardHeader>
             <CardTitle>Upload</CardTitle>
             <CardDescription>
-              Envie arquivos ao Supabase Storage protegido por usuario.
+              Envie arquivos ao Supabase Storage protegido por usuário.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -222,19 +222,19 @@ export function DocumentsView({
                 placeholder="Vinculo: cliente, processo ou contrato"
                 required
               />
-            <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-secondary p-4 text-center text-sm text-muted-foreground transition-colors hover:bg-hover">
-              <FileUp className="mb-2 size-5 text-primary" />
-              <span>{uploadedFile ?? "Selecionar arquivo"}</span>
-              <input
-                className="sr-only"
-                name="file"
-                type="file"
-                required
-                onChange={(event) => {
-                  setUploadedFile(event.target.files?.[0]?.name ?? null)
-                }}
-              />
-            </label>
+              <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-secondary p-4 text-center text-sm text-muted-foreground transition-colors hover:bg-hover">
+                <FileUp className="mb-2 size-5 text-primary" />
+                <span>{uploadedFile ?? "Selecionar arquivo"}</span>
+                <input
+                  className="sr-only"
+                  name="file"
+                  type="file"
+                  required
+                  onChange={(event) => {
+                    setUploadedFile(event.target.files?.[0]?.name ?? null)
+                  }}
+                />
+              </label>
               {feedback ? (
                 <FormFeedback tone={feedback.tone}>{feedback.message}</FormFeedback>
               ) : null}
@@ -253,7 +253,7 @@ export function DocumentsView({
             ) : null}
             <div className="flex items-center gap-2 rounded-xl border border-border bg-secondary p-3 text-sm text-muted-foreground">
               <ShieldCheck className="size-4 text-primary" />
-              Documentos ficarao protegidos por usuario no Storage.
+              Documentos ficarao protegidos por usuário no Storage.
             </div>
           </CardContent>
         </Card>

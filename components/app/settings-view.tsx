@@ -23,7 +23,7 @@ const securityItems = [
   "Rotas privadas protegidas pelo proxy do Supabase quando as envs existirem",
   "RLS previsto no schema Supabase para isolamento por usuario",
   "Chaves sensiveis fora do frontend",
-  "Confirmacao em acoes destrutivas",
+  "Confirmação em ações destrutivas",
   "Logs de atividades importantes previstos",
 ]
 
@@ -35,10 +35,10 @@ export function SettingsView({ activityLogs }: { activityLogs: ActivityLog[] }) 
           Fase 6
         </p>
         <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground">
-          Configuracoes
+          Configurações
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Perfil, seguranca, logs e preferencias preparadas para a etapa com banco.
+          Perfil, segurança, logs e preferências preparadas para a etapa com banco.
         </p>
       </div>
 
@@ -46,7 +46,7 @@ export function SettingsView({ activityLogs }: { activityLogs: ActivityLog[] }) 
         <Card>
           <CardHeader>
             <CardTitle>Perfil</CardTitle>
-            <CardDescription>Usuario mockado da sessao atual.</CardDescription>
+            <CardDescription>Usuário mockado da sessão atual.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3 rounded-xl border border-border bg-secondary p-4">
@@ -63,7 +63,7 @@ export function SettingsView({ activityLogs }: { activityLogs: ActivityLog[] }) 
 
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Checklist de seguranca</CardTitle>
+            <CardTitle>Checklist de segurança</CardTitle>
             <CardDescription>
               Itens fundamentais para fechar antes de conectar o banco.
             </CardDescription>
@@ -85,7 +85,7 @@ export function SettingsView({ activityLogs }: { activityLogs: ActivityLog[] }) 
       <section className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardDescription>Permissoes</CardDescription>
+            <CardDescription>Permissões</CardDescription>
             <CardTitle className="flex items-center gap-2 text-xl">
               <UserCog className="size-5 text-primary" />
               Administrador
@@ -94,7 +94,7 @@ export function SettingsView({ activityLogs }: { activityLogs: ActivityLog[] }) 
         </Card>
         <Card>
           <CardHeader>
-            <CardDescription>Autenticacao</CardDescription>
+            <CardDescription>Autenticação</CardDescription>
             <CardTitle className="flex items-center gap-2 text-xl">
               <LockKeyhole className="size-5 text-primary" />
               Supabase Auth
@@ -106,7 +106,7 @@ export function SettingsView({ activityLogs }: { activityLogs: ActivityLog[] }) 
             <CardDescription>Storage</CardDescription>
             <CardTitle className="flex items-center gap-2 text-xl">
               <ShieldCheck className="size-5 text-primary" />
-              Protegido por usuario
+              Protegido por usuário
             </CardTitle>
           </CardHeader>
         </Card>
@@ -116,16 +116,16 @@ export function SettingsView({ activityLogs }: { activityLogs: ActivityLog[] }) 
         <CardHeader>
           <CardTitle>Logs de atividade</CardTitle>
           <CardDescription>
-            Historico das principais operacoes do sistema.
+            Histórico das principais operações do sistema.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Acao</TableHead>
+                <TableHead>Ação</TableHead>
                 <TableHead>Entidade</TableHead>
-                <TableHead>Usuario</TableHead>
+                <TableHead>Usuário</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Data</TableHead>
               </TableRow>

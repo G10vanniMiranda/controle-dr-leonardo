@@ -44,10 +44,10 @@ export function ReportsView({
           Fase 6
         </p>
         <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground">
-          Relatorios
+          Relatórios
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Relatorios financeiros e juridicos com filtros prontos para ligar ao banco.
+          Relatórios financeiros e jurídicos com filtros prontos para ligar ao banco.
         </p>
       </div>
 
@@ -55,7 +55,7 @@ export function ReportsView({
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
           <CardDescription>
-            Periodo, cliente, processo, categoria e status para consultas futuras.
+            Período, cliente, processo, categoria e status para consultas futuras.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-5">
@@ -87,16 +87,16 @@ export function ReportsView({
 
       <Card>
         <CardHeader>
-          <CardTitle>Relatorios disponiveis</CardTitle>
+          <CardTitle>Relatórios disponíveis</CardTitle>
           <CardDescription>
-            Exportacao para PDF e Excel fica preparada para a etapa de backend.
+            Exportação para PDF e Excel fica preparada para a etapa de backend.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Relatorio</TableHead>
+                <TableHead>Relatório</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Resultado</TableHead>
                 <TableHead className="text-right">Exportar</TableHead>

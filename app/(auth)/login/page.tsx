@@ -20,7 +20,7 @@ export default function LoginPage() {
           </div>
           <CardTitle className="text-2xl font-bold">Dr. Leonardo Controle</CardTitle>
           <CardDescription>
-            Acesse o painel juridico e financeiro do escritorio.
+            Acesse o painel juridico e financeiro do escritório.
           </CardDescription>
         </CardHeader>
         <CardContent>

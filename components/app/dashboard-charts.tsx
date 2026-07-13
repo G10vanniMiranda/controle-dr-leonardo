@@ -18,7 +18,7 @@ function ChartsSkeleton() {
       <Card className="xl:col-span-2">
         <CardHeader>
           <CardTitle>Fluxo mensal</CardTitle>
-          <CardDescription>Entradas e saidas previstas em reais.</CardDescription>
+          <CardDescription>Entradas e saídas previstas em reais.</CardDescription>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-80 w-full" />
@@ -27,7 +27,7 @@ function ChartsSkeleton() {
       <Card>
         <CardHeader>
           <CardTitle>Recebimentos</CardTitle>
-          <CardDescription>Distribuicao por categoria.</CardDescription>
+          <CardDescription>Distribuição por categoria.</CardDescription>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-80 w-full" />
@@ -36,7 +36,7 @@ function ChartsSkeleton() {
       <Card className="xl:col-span-3">
         <CardHeader>
           <CardTitle>Status dos processos</CardTitle>
-          <CardDescription>Visao operacional por fase atual.</CardDescription>
+          <CardDescription>Visão operacional por fase atual.</CardDescription>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-72 w-full" />

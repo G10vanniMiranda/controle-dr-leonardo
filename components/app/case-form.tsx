@@ -120,7 +120,7 @@ export function CaseForm({
     setSaving(false)
 
     if (!result.ok) {
-      setError(result.error ?? "Nao foi possivel salvar o processo.")
+      setError(result.error ?? "Não foi possível salvar o processo.")
       return
     }
 
@@ -160,7 +160,7 @@ export function CaseForm({
                 ))}
               </select>
             </Field>
-            <Field label="Numero do processo" error={form.formState.errors.caseNumber?.message}>
+            <Field label="Número do processo" error={form.formState.errors.caseNumber?.message}>
               <Input
                 placeholder="0000000-00.2026.8.04.0001"
                 {...form.register("caseNumber")}
@@ -172,11 +172,11 @@ export function CaseForm({
                 }}
               />
             </Field>
-            <Field label="Tipo da acao" error={form.formState.errors.actionType?.message}>
+            <Field label="Tipo da ação" error={form.formState.errors.actionType?.message}>
               <Input placeholder="Ex.: Revisional contratual" {...form.register("actionType")} />
             </Field>
-            <Field label="Parte contraria" error={form.formState.errors.opposingParty?.message}>
-              <Input placeholder="Nome da parte contraria" {...form.register("opposingParty")} />
+            <Field label="Parte contrária" error={form.formState.errors.opposingParty?.message}>
+              <Input placeholder="Nome da parte contrária" {...form.register("opposingParty")} />
             </Field>
             <Field label="Vara" error={form.formState.errors.court?.message}>
               <Input placeholder="3a Vara Civel" {...form.register("court")} />
@@ -220,10 +220,10 @@ export function CaseForm({
             </Field>
           </div>
 
-          <Field label="Observacoes">
+          <Field label="Observações">
             <textarea
               className="min-h-28 rounded-xl border border-input bg-input px-3 py-2 text-sm text-foreground placeholder:text-tertiary focus:border-ring focus:ring-2 focus:ring-ring/35 focus:outline-none"
-              placeholder="Historico interno ou orientacoes do processo"
+              placeholder="Histórico interno ou orientações do processo"
               {...form.register("notes")}
             />
           </Field>

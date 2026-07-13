@@ -80,7 +80,7 @@ export function ModulePage({
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
           <CardDescription>
-            Pesquisa, paginacao e filtros com padrao unico para todo o sistema.
+            Pesquisa, paginação e filtros com padrão único para todo o sistema.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -97,7 +97,7 @@ export function ModulePage({
         <CardHeader>
           <CardTitle>Registros</CardTitle>
           <CardDescription>
-            Lista profissional com busca, ordenacao e paginacao previstas.
+            Lista profissional com busca, ordenação e paginação previstas.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -148,7 +148,7 @@ export function ModulePage({
                 Anterior
               </Button>
               <Button variant="outline" size="sm">
-                Proxima
+                Próxima
                 <ChevronRight className="size-4" />
               </Button>
             </div>

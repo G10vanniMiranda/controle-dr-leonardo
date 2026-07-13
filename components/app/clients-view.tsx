@@ -118,14 +118,14 @@ export function ClientsView({
     setDeletingId(null)
 
     if (!result.ok) {
-      setFeedback(result.error ?? "Nao foi possivel excluir o cliente.")
+      setFeedback(result.error ?? "Não foi possível excluir o cliente.")
       return
     }
 
     setVisibleClients((currentClients) =>
       currentClients.filter((client) => client.id !== id)
     )
-    setFeedback("Cliente excluido com sucesso.")
+    setFeedback("Cliente excluído com sucesso.")
     router.refresh()
   }
 
@@ -140,7 +140,7 @@ export function ClientsView({
             Clientes
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Cadastro, pesquisa e acompanhamento dos clientes do escritorio.
+            Cadastro, pesquisa e acompanhamento dos clientes do escritório.
           </p>
         </div>
         <Button asChild>

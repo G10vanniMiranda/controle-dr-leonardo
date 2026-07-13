@@ -141,7 +141,7 @@ export function DebtInstallmentsView({
     const result = await markDebtInstallmentPaymentAsPaidAction(paymentToUpdate)
 
     if (!result.ok) {
-      setFeedback(result.error ?? "Nao foi possivel marcar a parcela como paga.")
+      setFeedback(result.error ?? "Não foi possivel marcar a parcela como paga.")
       return
     }
 
@@ -191,7 +191,7 @@ export function DebtInstallmentsView({
             Parcelamentos
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Quitacao de dividas, parcelas, comprovantes e saldo devedor.
+            Quitação de dividas, parcelas, comprovantes e saldo devedor.
           </p>
         </div>
       </div>
@@ -206,7 +206,7 @@ export function DebtInstallmentsView({
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
           <CardDescription>
-            Filtre por cliente, descricao da divida e status do parcelamento.
+            Filtre por cliente, descrição da divida e status do parcelamento.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -314,7 +314,7 @@ export function DebtInstallmentsView({
                         Entrada {brlFormatter.format(plan.entryValueCents / 100)} | dia {plan.dueDay}
                       </div>
                     </TableCell>
-                    <TableCell>{client?.fullName ?? "Cliente nao encontrado"}</TableCell>
+                    <TableCell>{client?.fullName ?? "Cliente não encontrado"}</TableCell>
                     <TableCell>
                       <Badge
                         variant={
@@ -343,7 +343,7 @@ export function DebtInstallmentsView({
             <EmptyState
               className="mt-4"
               title="Nenhum parcelamento encontrado"
-              description="Ajuste a busca ou o status para localizar planos de quitacao cadastrados."
+              description="Ajuste a busca ou o status para localizar planos de quitação cadastrados."
             />
           ) : (
             <ListPagination
@@ -383,7 +383,7 @@ export function DebtInstallmentsView({
                   <TableHead>Status</TableHead>
                   <TableHead>Comprovante</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
-                  <TableHead className="text-right">Acao</TableHead>
+                  <TableHead className="text-right">Ação</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -441,7 +441,7 @@ export function DebtInstallmentsView({
               <EmptyState
                 className="mt-4"
                 title="Nenhuma parcela encontrada"
-                description="As parcelas do plano selecionado serao listadas aqui quando existirem."
+                description="As parcelas do plano selecionado serão listadas aqui quando existirem."
               />
             ) : null}
           </CardContent>

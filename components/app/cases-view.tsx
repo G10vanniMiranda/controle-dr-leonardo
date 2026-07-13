@@ -122,14 +122,14 @@ export function CasesView({
     setDeletingId(null)
 
     if (!result.ok) {
-      setFeedback(result.error ?? "Nao foi possivel excluir o processo.")
+      setFeedback(result.error ?? "Não foi possível excluir o processo.")
       return
     }
 
     setVisibleCases((currentCases) =>
       currentCases.filter((legalCase) => legalCase.id !== id)
     )
-    setFeedback("Processo excluido com sucesso.")
+    setFeedback("Processo excluído com sucesso.")
     router.refresh()
   }
 
@@ -159,7 +159,7 @@ export function CasesView({
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
           <CardDescription>
-            Pesquise por numero, cliente, parte contraria ou tipo da acao.
+            Pesquise por numero, cliente, parte contraria ou tipo da ação.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -234,7 +234,7 @@ export function CasesView({
                     Valor da causa
                   </SortHeader>
                 </TableHead>
-                <TableHead className="text-right">Acoes</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -260,7 +260,7 @@ export function CasesView({
                           {client.fullName}
                         </Link>
                       ) : (
-                        "Cliente nao encontrado"
+                        "Cliente não encontrado"
                       )}
                     </TableCell>
                     <TableCell>
@@ -296,7 +296,7 @@ export function CasesView({
                             <DialogHeader>
                               <DialogTitle>Excluir processo?</DialogTitle>
                               <DialogDescription>
-                                Esta acao remove o processo e os registros
+                                Esta ação remove o processo e os registros
                                 dependentes conforme as regras do banco.
                               </DialogDescription>
                             </DialogHeader>

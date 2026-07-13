@@ -149,7 +149,7 @@ export function LegalFeesView({
     const result = await markFeeInstallmentAsPaidAction(id)
 
     if (!result.ok) {
-      setFeedback(result.error ?? "Nao foi possivel marcar a parcela como paga.")
+      setFeedback(result.error ?? "Não foi possível marcar a parcela como paga.")
       return
     }
 
@@ -157,11 +157,11 @@ export function LegalFeesView({
       currentInstallments.map((installment) =>
         installment.id === id
           ? {
-              ...installment,
-              paidAt: new Date().toISOString().slice(0, 10),
-              paymentMethod: "PIX",
-              status: "paid",
-            }
+            ...installment,
+            paidAt: new Date().toISOString().slice(0, 10),
+            paymentMethod: "PIX",
+            status: "paid",
+          }
           : installment
       )
     )
@@ -180,7 +180,7 @@ export function LegalFeesView({
             Honorarios
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Contratos, geracao de parcelas, pagamentos e saldo restante.
+            Contratos, geração de parcelas, pagamentos e saldo restante.
           </p>
         </div>
         <Button asChild>
@@ -245,7 +245,7 @@ export function LegalFeesView({
 
       <Card>
         <CardHeader>
-          <CardTitle>Contratos de honorarios</CardTitle>
+          <CardTitle>Contratos de honorários</CardTitle>
           <CardDescription>
             Selecione um contrato para visualizar e controlar as parcelas.
           </CardDescription>
@@ -316,7 +316,7 @@ export function LegalFeesView({
                         Entrada {brlFormatter.format(legalFee.entryValueCents / 100)}
                       </div>
                     </TableCell>
-                    <TableCell>{client?.fullName ?? "Cliente nao encontrado"}</TableCell>
+                    <TableCell>{client?.fullName ?? "Cliente não encontrado"}</TableCell>
                     <TableCell>
                       <Badge
                         variant={legalFee.status === "overdue" ? "destructive" : "secondary"}
@@ -339,7 +339,7 @@ export function LegalFeesView({
             <EmptyState
               className="mt-4"
               title="Nenhum contrato encontrado"
-              description="Ajuste os filtros para localizar contratos de honorarios cadastrados."
+              description="Ajuste os filtros para localizar contratos de honorários cadastrados."
             />
           ) : (
             <ListPagination
@@ -379,7 +379,7 @@ export function LegalFeesView({
               <EmptyState
                 className="mt-4"
                 title="Nenhuma parcela encontrada"
-                description="As parcelas deste contrato serao exibidas aqui quando forem geradas."
+                description="As parcelas deste contrato serão exibidas aqui quando forem geradas."
               />
             ) : null}
           </CardContent>
@@ -460,9 +460,8 @@ function InstallmentsTable({
             </TableCell>
             <TableCell>
               {installment.paidAt
-                ? `${dateFormatter.format(new Date(installment.paidAt))} | ${
-                    installment.paymentMethod
-                  }`
+                ? `${dateFormatter.format(new Date(installment.paidAt))} | ${installment.paymentMethod
+                }`
                 : "-"}
             </TableCell>
             <TableCell className="text-right">

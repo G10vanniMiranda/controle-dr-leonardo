@@ -67,7 +67,7 @@ export default async function ClienteDetalhePage({
           <CardHeader>
             <CardTitle>Dados cadastrais</CardTitle>
             <CardDescription>
-              Informacoes principais usadas nos modulos juridicos e financeiros.
+              Informações principais usadas nos módulos jurídicos e financeiros.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -79,14 +79,14 @@ export default async function ClienteDetalhePage({
             />
             <Info icon={Phone} label="Telefone" value={client.phone} />
             <Info icon={Mail} label="E-mail" value={client.email} />
-            <Info label="Endereco" value={client.address} />
+            <Info label="Endereço" value={client.address} />
             <Info
               label="Cadastro"
               value={dateFormatter.format(new Date(client.createdAt))}
             />
             <div className="sm:col-span-2">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">
-                Observacoes
+                Observações
               </p>
               <p className="mt-2 rounded-xl border border-border bg-secondary p-3 text-sm leading-6 text-muted-foreground">
                 {client.notes}
@@ -98,7 +98,7 @@ export default async function ClienteDetalhePage({
         <Card>
           <CardHeader>
             <CardTitle>Resumo</CardTitle>
-            <CardDescription>Visao consolidada do cliente.</CardDescription>
+            <CardDescription>Visão consolidada do cliente.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <Summary label="Processos vinculados" value={String(linkedCases.length)} />
@@ -106,7 +106,7 @@ export default async function ClienteDetalhePage({
               label="Valor total das causas"
               value={brlFormatter.format(totalClaimValue / 100)}
             />
-            <Summary label="Pendencias mockadas" value="2" />
+            <Summary label="Pendências mockadas" value="2" />
           </CardContent>
         </Card>
       </section>
@@ -161,7 +161,7 @@ export default async function ClienteDetalhePage({
             <EmptyState
               className="mt-4"
               title="Nenhum processo vinculado"
-              description="Use a acao de vincular processo para associar demandas juridicas a este cliente."
+              description="Use a ação de vincular processo para associar demandas juridicas a este cliente."
             />
           ) : null}
         </CardContent>

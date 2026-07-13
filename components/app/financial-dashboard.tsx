@@ -31,11 +31,11 @@ export function FinancialDashboard({
       icon: TrendingUp,
       label: "Entradas previstas",
       value: brlFormatter.format(projectedReceiptsCents / 100),
-      detail: "Honorarios, condenacoes e parcelamentos",
+      detail: "Honorários, condenações e parcelamentos",
     },
     {
       icon: TrendingDown,
-      label: "Saidas do mes",
+      label: "Saídas do mês",
       value: brlFormatter.format(summary.totalCents / 100),
       detail: `${summary.bills.length} contas em junho`,
     },
@@ -43,13 +43,13 @@ export function FinancialDashboard({
       icon: ReceiptText,
       label: "Contas pendentes",
       value: brlFormatter.format(summary.pendingCents / 100),
-      detail: "Pendencias antes do vencimento",
+      detail: "Pendências antes do vencimento",
     },
     {
       icon: WalletCards,
       label: "Saldo projetado",
       value: brlFormatter.format(balanceCents / 100),
-      detail: "Entradas menos saidas previstas",
+      detail: "Entradas menos saídas previstas",
     },
   ]
 
@@ -58,7 +58,7 @@ export function FinancialDashboard({
       <CardHeader>
         <CardTitle>Dashboard financeiro</CardTitle>
         <CardDescription>
-          Recorte mensal com entradas, saidas e saldo projetado.
+          Recorte mensal com entradas, saídas e saldo projetado.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

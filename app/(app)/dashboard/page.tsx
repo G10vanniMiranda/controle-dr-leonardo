@@ -101,13 +101,13 @@ export default async function DashboardPage() {
 
   const dashboardMetrics = [
     {
-      detail: "Pagamentos recebidos no mes",
+      detail: "Pagamentos recebidos no mês",
       icon: CircleDollarSign,
-      label: "Recebido no mes",
+      label: "Recebido no mês",
       value: brlFormatter.format(receivedCents / 100),
     },
     {
-      detail: "Honorarios, condenacoes e parcelamentos",
+      detail: "Honorários, condenações e parcelamentos",
       icon: HandCoins,
       label: "A receber",
       value: brlFormatter.format(projectedReceiptsCents / 100),
@@ -118,7 +118,7 @@ export default async function DashboardPage() {
       label: "Total vencido",
       value: brlFormatter.format(
         (overdueFeeCents + overdueDebtCents + monthlyBillsSummary.overdueCents) /
-          100
+        100
       ),
     },
     {
@@ -130,7 +130,7 @@ export default async function DashboardPage() {
     {
       detail: `${legalFees.length} contrato(s)`,
       icon: Banknote,
-      label: "Honorarios pendentes",
+      label: "Honorários pendentes",
       value: brlFormatter.format(pendingFeeCents / 100),
     },
     {
@@ -142,15 +142,15 @@ export default async function DashboardPage() {
       ),
     },
     {
-      detail: `${monthlyBillsSummary.bills.length} conta(s) no mes`,
+      detail: `${monthlyBillsSummary.bills.length} conta(s) no mês`,
       icon: ReceiptText,
       label: "Contas pendentes",
       value: brlFormatter.format(monthlyBillsSummary.pendingCents / 100),
     },
     {
-      detail: `${condemnations.length} condenacao(oes)`,
+      detail: `${condemnations.length} condenação(ões)`,
       icon: Clock3,
-      label: "Condenacoes abertas",
+      label: "Condenações abertas",
       value: brlFormatter.format(openCondemnationCents / 100),
     },
   ]
@@ -160,8 +160,8 @@ export default async function DashboardPage() {
       total: cases.filter((item) => item.status === status).length,
     })),
     categoryReceipts: [
-      { name: "Honorarios", value: feeReceivedCents },
-      { name: "Condenacoes", value: condemnationReceivedCents },
+      { name: "Honorários", value: feeReceivedCents },
+      { name: "Condenações", value: condemnationReceivedCents },
       { name: "Parcelamentos", value: debtReceivedCents },
     ],
     monthlyFlow: [
@@ -187,10 +187,10 @@ export default async function DashboardPage() {
             Painel executivo
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground">
-            Visao geral
+            Visão geral
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Indicadores juridicos e financeiros do mes atual.
+            Indicadores juridicos e financeiros do mês atual.
           </p>
         </div>
         <Badge variant="outline">Junho de 2026</Badge>
@@ -229,9 +229,9 @@ export default async function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Movimentacoes recentes</CardTitle>
+          <CardTitle>Movimentações recentes</CardTitle>
           <CardDescription>
-            Ultimos processos e valores acompanhados no escritorio.
+            Últimos processos e valores acompanhados no escritório.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -33,7 +33,7 @@ export default async function ProcessoDetalhePage({
       <PageHeading
         eyebrow="Processo"
         title={legalCase.caseNumber}
-        description="Visao completa do processo, cliente vinculado, fase atual e valores principais."
+        description="Visão completa do processo, cliente vinculado, fase atual e valores principais."
         action={
           <Button asChild variant="outline">
             <Link href="/processos">Voltar</Link>
@@ -46,11 +46,11 @@ export default async function ProcessoDetalhePage({
           <CardHeader>
             <CardTitle>Dados processuais</CardTitle>
             <CardDescription>
-              Informacoes operacionais para acompanhamento juridico.
+              Informações operacionais para acompanhamento juridico.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
-            <Info icon={FileText} label="Tipo da acao" value={legalCase.actionType} />
+            <Info icon={FileText} label="Tipo da ação" value={legalCase.actionType} />
             <Info
               icon={Scale}
               label="Status"
@@ -96,7 +96,7 @@ export default async function ProcessoDetalhePage({
                 </Button>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Cliente nao encontrado.</p>
+              <p className="text-sm text-muted-foreground">Cliente não encontrado.</p>
             )}
           </CardContent>
         </Card>
@@ -106,7 +106,7 @@ export default async function ProcessoDetalhePage({
         <CardHeader>
           <CardTitle>Historico interno</CardTitle>
           <CardDescription>
-            Linha inicial mockada para o acompanhamento de movimentacoes.
+            Linha inicial mockada para o acompanhamento de movimentações.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3">

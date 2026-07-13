@@ -7,9 +7,9 @@ export default function NotFound() {
   return (
     <RouteState
       action={<BackToDashboardButton />}
-      description="O registro ou pagina solicitada nao foi encontrado. Verifique se o endereco esta correto ou retorne para a visao geral do sistema."
-      eyebrow="Nao encontrado"
-      title="Nao localizamos este conteudo"
+      description="O registro ou pagina solicitada não foi encontrada. Verifique se o endereco esta correto ou retorne para a visão geral do sistema."
+      eyebrow="Não encontrado"
+      title="Não localizamos este conteúdo"
     />
   )
 }
