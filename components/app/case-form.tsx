@@ -8,8 +8,8 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import {
-  formatCaseNumber,
   formatMoneyInput,
+  onlyDigits,
   parseMoneyToNumber,
 } from "@/lib/input-masks"
 import {
@@ -33,7 +33,7 @@ import { Label } from "@/components/ui/label"
 
 const caseSchema = z.object({
   actionType: z.string().min(3, "Informe o tipo da acao."),
-  caseNumber: z.string().min(25, "Informe o numero do processo completo."),
+  caseNumber: z.string().min(20, "Informe o numero do processo completo."),
   clientId: z.string().min(1, "Selecione um cliente."),
   court: z.string().min(2, "Informe a vara."),
   district: z.string().min(2, "Informe a comarca."),
@@ -162,13 +162,18 @@ export function CaseForm({
             </Field>
             <Field label="Número do processo" error={form.formState.errors.caseNumber?.message}>
               <Input
-                placeholder="0000000-00.2026.8.04.0001"
+                inputMode="numeric"
+                placeholder="00000000020268040001"
                 {...form.register("caseNumber")}
                 onChange={(event) => {
-                  form.setValue("caseNumber", formatCaseNumber(event.target.value), {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  })
+                  form.setValue(
+                    "caseNumber",
+                    onlyDigits(event.target.value).slice(0, 20),
+                    {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    }
+                  )
                 }}
               />
             </Field>
